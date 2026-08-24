@@ -1,15 +1,24 @@
-# David Ekpechue — Personal Portfolio
+# David Ekpechue — Portfolio Universe
 
-A responsive, single-page portfolio website designed as a focused starting point for showcasing selected work, experience, and contact details.
+A data-driven React portfolio that uses a restrained WebGL constellation as a second navigation layer. Recruiters can use the standard page structure; visitors can select a project, technology, or domain to reframe the graph and update the URL.
 
-## Preview locally
+## Run locally
 
-Open `index.html` in a browser.
+```bash
+npm install
+npm run dev
+```
 
-## Personalise
+Create a production build with `npm run build`.
 
-- Replace the sample projects and descriptions in `index.html`.
-- Update the `hello@example.com` email address.
-- Add links to your LinkedIn or other profiles in the footer.
+## Update portfolio content
 
-Built with plain HTML, CSS, and JavaScript—no build step required.
+All editable content lives in [`src/data/portfolio.ts`](src/data/portfolio.ts): projects, technologies, domains, and experience. Add a CV PDF to `public/` and update the CV link in `src/App.tsx` when it is ready.
+
+## Routes
+
+- `/projects/minglr`
+- `/tech/typescript`
+- `/domain/backend`
+
+The app uses the browser history API, so Back and Forward preserve constellation focus.

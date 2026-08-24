@@ -3,72 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="The personal portfolio of David Ekpechue." />
-    <title>David Ekpechue — Portfolio</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono&family=DM+Sans:wght@400;500;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css" />
+    <meta name="theme-color" content="#0b0d10" />
+    <meta name="description" content="David Ekpechue — Software Engineer. Selected systems, technologies, and experience." />
+    <meta property="og:title" content="David Ekpechue — Software Engineer" />
+    <meta property="og:description" content="An interactive map of software systems, technologies, and experience." />
+    <title>David Ekpechue — Software Engineer</title>
   </head>
   <body>
-    <header class="site-header">
-      <a class="wordmark" href="#top" aria-label="David Ekpechue home">DE<span>.</span></a>
-      <nav aria-label="Main navigation">
-        <a href="#work">Work</a>
-        <a href="#about">About</a>
-        <a href="#contact">Contact</a>
-      </nav>
-    </header>
-
-    <main id="top">
-      <section class="hero">
-        <p class="eyebrow">Portfolio · 2026</p>
-        <h1>Ideas with <em>intent.</em><br />Made to matter.</h1>
-        <div class="hero-footer">
-          <p>I’m David — a creative problem-solver focused on thoughtful, human-centred digital work.</p>
-          <a class="circle-link" href="#work" aria-label="Explore selected work">↓</a>
-        </div>
-      </section>
-
-      <section class="work" id="work" aria-labelledby="work-heading">
-        <div class="section-heading">
-          <p class="eyebrow">01 / Selected work</p>
-          <h2 id="work-heading">A few things<br />I’ve been shaping.</h2>
-        </div>
-        <div class="project-grid">
-          <article class="project project-one">
-            <div class="project-image image-aurora"><span>01</span><div class="aurora-word">NORTH</div></div>
-            <div class="project-info"><h3>North / Brand system</h3><p>Identity · Strategy</p></div>
-          </article>
-          <article class="project project-two">
-            <div class="project-image image-studio"><span>02</span><div class="studio-shape"></div><div class="studio-title">Aster<br />Studio</div></div>
-            <div class="project-info"><h3>Aster Studio / Digital presence</h3><p>Web design · Development</p></div>
-          </article>
-          <article class="project project-three">
-            <div class="project-image image-field"><span>03</span><div class="field-disc"></div><div class="field-copy">FIELD<br />NOTES</div></div>
-            <div class="project-info"><h3>Field Notes / Editorial platform</h3><p>Product · Art direction</p></div>
-          </article>
-        </div>
-      </section>
-
-      <section class="about" id="about">
-        <p class="eyebrow">02 / A little about me</p>
-        <div class="about-content">
-          <h2>Curious by nature.<br /><em>Deliberate</em> by design.</h2>
-          <div><p>I enjoy turning knotty questions into clear, memorable experiences. My work sits at the intersection of strategy, design, and technology — always with people at the centre.</p><p>Based in Ireland, available for meaningful collaborations everywhere.</p></div>
-        </div>
-      </section>
-
-      <section class="contact" id="contact">
-        <p class="eyebrow">03 / Get in touch</p>
-        <h2>Have an idea?<br /><a href="mailto:hello@example.com">Let’s talk <span>↗</span></a></h2>
-      </section>
-    </main>
-
-    <footer>
-      <p>© <span id="year"></span> David Ekpechue</p>
-      <div><a href="https://github.com/DavidEkpechue" target="_blank" rel="noreferrer">GitHub</a><a href="mailto:hello@example.com">Email</a></div>
-    </footer>
-    <script src="script.js"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
