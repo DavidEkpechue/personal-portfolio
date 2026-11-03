@@ -38,7 +38,7 @@ function paint(canvas: HTMLCanvasElement, width: number, height: number, seed: n
     const radius = bright ? .7 + depth * 1.1 : .35 + depth * .6
     const alpha = bright ? .55 + depth * .45 : .16 + depth * .42
     const tint = next()
-    const colour = tint > .82 ? '196,186,255' : tint > .7 ? '255,236,222' : '236,234,244'
+    const colour = tint > .82 ? '198,212,255' : tint > .7 ? '242,222,176' : '238,236,230'
     if (bright) {
       const glow = context.createRadialGradient(x, y, 0, x, y, radius * 5)
       glow.addColorStop(0, `rgba(${colour},${alpha * .45})`)

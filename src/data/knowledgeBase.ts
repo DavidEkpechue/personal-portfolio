@@ -5,7 +5,7 @@ import { domainRelationships, relationships } from './relationships'
 import { technologies } from './technologies'
 import type { Profile, Selection } from './types'
 
-export const profile: Profile = { name: 'David Ekpechue', role: 'Software Engineer', intro: 'Building clear, dependable systems for people.', email: 'davidekpechue@gmail.com', github: 'https://github.com/DavidEkpechue' }
+export const profile: Profile = { name: 'David Ekpechue', role: 'Software Engineer', intro: 'Building clear, dependable systems for people.', email: 'davidekpechue@gmail.com', github: 'https://github.com/DavidEkpechue', instagram: 'https://www.instagram.com/david_ekpec/' }
 
 function assertUnique(label: string, ids: string[]) {
   const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index)
@@ -78,8 +78,8 @@ export const entityLabel = (selection: Selection) => {
   return entity ? ('title' in entity ? entity.title : entity.name) : 'Universe'
 }
 
-export const statusLabel = (status: string) => status.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
-export const verificationLabel = (verification: string) => verification.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+export const statusLabel = (status: string) => { const words = status.split('-'); return [words[0].charAt(0).toUpperCase() + words[0].slice(1), ...words.slice(1)].join(' ') }
+export const verificationLabel = (verification: string) => { const words = verification.split('-'); return [words[0].charAt(0).toUpperCase() + words[0].slice(1), ...words.slice(1)].join(' ') }
 
 export const searchKnowledgeBase = (query: string) => {
   const term = query.trim().toLowerCase()

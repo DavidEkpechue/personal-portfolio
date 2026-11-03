@@ -10,6 +10,8 @@ import type { Project, Selection, Technology } from '../data/portfolio'
 import { getProjectNodeColor } from '../graph/colors'
 import { settleWhenNear } from '../graph/settle'
 import { useNearViewport } from '../hooks/useNearViewport'
+import Icon from './Icon'
+import { entityColor } from '../graph/palette'
 
 type ExplorerEntity = { kind: 'project' | 'technology'; id: string } | null
 
@@ -116,11 +118,11 @@ function TechnologyInspector({ entity, domainId, onEntity, onDomain, onDomainHov
     const repositoryVerified = evidence.filter(item => item.verification === 'repo-verified').length
     return <aside className="technology-inspector" aria-live="polite">
       <header><span>Selected technology</span><button type="button" onClick={() => onEntity(null)}>Clear</button></header>
-      <div className="technology-inspector-object"><i aria-hidden="true" /><div><p>{technology.category} · {technology.proficiency}</p><h3>{technology.name}</h3></div></div>
+      <div className="technology-inspector-object"><i aria-hidden="true" /><div><p>{technology.category}, {technology.proficiency}</p><h3>{technology.name}</h3></div></div>
       <p className="technology-inspector-description">{technology.description}</p>
       <div className="technology-evidence"><span>Used in</span>{evidence.map(item => <button key={item.id} type="button" onClick={() => onEntity({ kind: 'project', id: item.id })}><span><strong>{item.title}</strong><small>{evidenceLine(technology, item)}</small></span><em>{statusLabel(item.status)}</em></button>)}</div>
       <dl><div><dt>Projects</dt><dd>{evidence.length}</dd></div><div><dt>Verified</dt><dd>{repositoryVerified} repositor{repositoryVerified === 1 ? 'y' : 'ies'}</dd></div><div><dt>Level</dt><dd>{technology.proficiency}</dd></div></dl>
-      <button className="inspector-open" type="button" onClick={() => onOpen({ kind: 'technology', id: technology.id })}>Open observatory <span aria-hidden="true">↗</span></button>
+      <button className="inspector-open" type="button" onClick={() => onOpen({ kind: 'technology', id: technology.id })}>Open on the map <Icon name="forward" /></button>
     </aside>
   }
 
@@ -132,7 +134,7 @@ function TechnologyInspector({ entity, domainId, onEntity, onDomain, onDomainHov
       <p className="technology-inspector-description">{project.shortDescription}</p>
       <div className="technology-stack-list"><span>Primary relationships</span>{stack.map(item => <button key={item.id} type="button" onClick={() => onEntity({ kind: 'technology', id: item.id })}>{item.name}</button>)}</div>
       <dl><div><dt>Role</dt><dd>{project.role}</dd></div><div><dt>Tier</dt><dd>{project.tier}</dd></div></dl>
-      <button className="inspector-open" type="button" onClick={() => onOpen({ kind: 'project', id: project.id })}>Open observatory <span aria-hidden="true">↗</span></button>
+      <button className="inspector-open" type="button" onClick={() => onOpen({ kind: 'project', id: project.id })}>Open on the map <Icon name="forward" /></button>
     </aside>
   }
 
@@ -265,10 +267,10 @@ export default function TechnologyExplorer({ compact, reducedMotion, onOpen }: {
   const activeDomainName = domains.find(domain => domain.id === activeDomain)?.name
   const showAll = () => { setSelectedDomain(null); setHoveredDomain(null); setEntity(null) }
   return <div className={`technology-explorer ${expanded ? 'is-map-expanded' : ''}`}>
-    <div className="technology-map-shell"><header><div><span className="map-status-dot" aria-hidden="true" />Evidence map</div><div className="technology-map-context">{activeDomainName && <strong>{activeDomainName}</strong>}{(selectedDomain || entity) && <button type="button" onClick={showAll}>Show all</button>}{compact && <button type="button" onClick={() => setExpanded(value => !value)}>{expanded ? 'Compact map' : 'Explore map'}</button>}<p>{compact ? 'Tap an object to inspect' : 'Drag objects · Select to inspect'}</p></div></header>
+    <div className="technology-map-shell"><header><div><span className="map-status-dot" aria-hidden="true" />Evidence map</div><div className="technology-map-context">{activeDomainName && <strong>{activeDomainName}</strong>}{(selectedDomain || entity) && <button type="button" onClick={showAll}>Show all</button>}{compact && <button type="button" onClick={() => setExpanded(value => !value)}>{expanded ? 'Compact map' : 'Explore map'}</button>}<p>{compact ? 'Tap an object to inspect' : 'Drag objects to rearrange, select one to inspect it'}</p></div></header>
       <div ref={rootRef} className="technology-map" aria-label="Interactive technology evidence map">
         <svg aria-hidden="true"><g>{links.map(link => { const source = endpointId(link.source); const target = endpointId(link.target); const active = highlightedIds.has(source) && highlightedIds.has(target); return <line key={link.id} ref={element => { if (element) edgeRefs.current.set(link.id, element); else edgeRefs.current.delete(link.id) }} className={`${link.kind === 'uses' ? 'is-project-link' : 'is-technology-link'} ${hasFilter ? active ? 'is-active' : 'is-dimmed' : 'is-idle'}`} /> })}</g></svg>
-        <div className="technology-map-nodes">{nodes.map(node => { const active = !hasFilter || highlightedIds.has(node.id); const selected = entity?.id === node.id; const projectColor = node.kind === 'project' ? getProjectNodeColor(node.id) : null; const size = node.kind === 'project' ? 7 + Math.sqrt(node.connections + 1) * 2.25 : 3.5 + Math.sqrt(node.connections + 1) * 1.55; const importantTechnology = compact ? node.importance >= 4.8 || node.connections >= 8 : node.importance >= 4.2 || node.connections >= 6; const labelTier = node.kind === 'project' ? 'project' : importantTechnology ? 'core' : 'detail'; return <button key={node.id} ref={element => { if (element) nodeRefs.current.set(node.id, element); else nodeRefs.current.delete(node.id) }} type="button" className={`technology-map-node is-${node.kind} ${hasFilter ? active ? 'is-related' : 'is-dimmed' : 'is-idle'} ${selected ? 'is-selected' : ''}`} data-label-tier={labelTier} tabIndex={labelTier === 'project' || labelTier === 'core' ? 0 : -1} style={{ '--map-node-size': `${size}px`, '--project-node-color': projectColor?.color, '--project-node-rgb': projectColor?.rgb } as CSSProperties} onPointerEnter={() => setHoveredId(node.id)} onPointerLeave={() => setHoveredId(null)} onFocus={() => setHoveredId(node.id)} onBlur={() => setHoveredId(null)} onClick={() => setEntity({ kind: node.kind, id: node.id })} aria-label={`${node.name}, ${node.connections} connections`} aria-pressed={selected}><i aria-hidden="true" /><span>{node.name}</span></button> })}</div>
+        <div className="technology-map-nodes">{nodes.map(node => { const active = !hasFilter || highlightedIds.has(node.id); const selected = entity?.id === node.id; const projectColor = node.kind === 'project' ? getProjectNodeColor(node.id) : null; const size = node.kind === 'project' ? 7 + Math.sqrt(node.connections + 1) * 2.25 : 3.5 + Math.sqrt(node.connections + 1) * 1.55; const importantTechnology = compact ? node.importance >= 4.8 || node.connections >= 8 : node.importance >= 4.2 || node.connections >= 6; const labelTier = node.kind === 'project' ? 'project' : importantTechnology ? 'core' : 'detail'; return <button key={node.id} ref={element => { if (element) nodeRefs.current.set(node.id, element); else nodeRefs.current.delete(node.id) }} type="button" className={`technology-map-node is-${node.kind} ${hasFilter ? active ? 'is-related' : 'is-dimmed' : 'is-idle'} ${selected ? 'is-selected' : ''}`} data-label-tier={labelTier} tabIndex={labelTier === 'project' || labelTier === 'core' ? 0 : -1} style={{ '--map-node-size': `${size}px`, '--project-node-color': projectColor?.color, '--node-color': entityColor(node.kind, node.id), '--project-node-rgb': projectColor?.rgb } as CSSProperties} onPointerEnter={() => setHoveredId(node.id)} onPointerLeave={() => setHoveredId(null)} onFocus={() => setHoveredId(node.id)} onBlur={() => setHoveredId(null)} onClick={() => setEntity({ kind: node.kind, id: node.id })} aria-label={`${node.name}, ${node.connections} connections`} aria-pressed={selected}><i aria-hidden="true" /><span>{node.name}</span></button> })}</div>
         <div className="technology-map-regions" aria-hidden="true">{domains.filter(domain => domain.graph.visibility === 'primary').map(domain => <span key={domain.id} style={{ left: `${(domainPositions[domain.id]?.[0] ?? .5) * 100}%`, top: `${(domainPositions[domain.id]?.[1] ?? .5) * 100}%` }}>{domain.name}</span>)}</div>
       </div>
     </div>

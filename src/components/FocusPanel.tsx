@@ -1,6 +1,7 @@
 import { domains, projects, statusLabel, technologies, verificationLabel } from '../data/portfolio'
 import type { Selection } from '../data/portfolio'
 import ProjectMedia from './ProjectMedia'
+import Icon from './Icon'
 
 interface FocusPanelProps {
   selection: Exclude<Selection, null>
@@ -29,9 +30,9 @@ function ProjectFocus({ id, onSelect, onMediaEmphasis, reducedMotion }: Omit<Foc
           <div><dt>Stack</dt><dd className="inline-entities">{project.technologies.map(id => <TechButton key={id} id={id} onSelect={onSelect} />)}</dd></div>
         </dl>
         <div className="focus-links">
-          {project.links.live && <a href={project.links.live} target="_blank" rel="noreferrer">Live <span aria-hidden="true">↗</span></a>}
-          {project.links.source && <a href={project.links.source} target="_blank" rel="noreferrer">Source <span aria-hidden="true">↗</span></a>}
-          <a href={`#case-${project.id}`}>Case study <span aria-hidden="true">↓</span></a>
+          {project.links.live && <a href={project.links.live} target="_blank" rel="noreferrer">Live <Icon name="external" /></a>}
+          {project.links.source && <a href={project.links.source} target="_blank" rel="noreferrer">Source <Icon name="external" /></a>}
+          <a href={`#case-${project.id}`}>Case study <Icon name="down" /></a>
         </div>
       </div>
       <ProjectMedia project={project} states={project.media} onEmphasis={onMediaEmphasis} reducedMotion={reducedMotion} />
@@ -67,7 +68,7 @@ function DomainFocus({ id, onSelect }: Omit<FocusPanelProps, 'selection' | 'onMe
   const projectIds = domain.projects
   return (
     <aside className="focus-panel focus-domain" aria-live="polite">
-      <p className="catalogue">Domain cluster / {domain.technologies.length.toString().padStart(2, '0')} objects</p>
+      <p className="catalogue">Domain cluster, {domain.technologies.length} objects</p>
       <h1 id="focus-title">{domain.name}</h1>
       <p className="focus-intro">{domain.description}</p>
       <div className="focus-domain-grid">

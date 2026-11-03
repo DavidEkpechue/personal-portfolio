@@ -134,7 +134,7 @@ function projectRingTarget(node: Pick<GraphNode, 'id'>, dimensions: GraphDimensi
   if (slot === undefined) return null
   const angle = slot / projectSlots.total * Math.PI * 2 - Math.PI / 2 + .3
   const centreX = dimensions.width * (compact ? .5 : .69)
-  const radiusX = compact ? dimensions.width * .32 : Math.min(dimensions.width * .25, 380)
+  const radiusX = compact ? dimensions.width * .24 : Math.min(dimensions.width * .25, 380)
   const radiusY = dimensions.height * (compact ? .32 : .36)
   return { x: centreX + Math.cos(angle) * radiusX, y: dimensions.height * .5 + Math.sin(angle) * radiusY }
 }

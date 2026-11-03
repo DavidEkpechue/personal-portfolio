@@ -4,11 +4,12 @@ import type { CSSProperties } from 'react'
 interface MobileStaggeredMenuProps {
   email: string
   github: string
+  instagram: string
   reducedMotion: boolean
 }
 
 // Staggered menu driven by CSS transitions; --i offsets each label's delay.
-export default function MobileStaggeredMenu({ email, github, reducedMotion }: MobileStaggeredMenuProps) {
+export default function MobileStaggeredMenu({ email, github, instagram, reducedMotion }: MobileStaggeredMenuProps) {
   const [open, setOpen] = useState(false)
   const items = [
     { label: 'Work', link: '#work' },
@@ -17,6 +18,7 @@ export default function MobileStaggeredMenu({ email, github, reducedMotion }: Mo
     { label: 'About', link: '#about' },
     { label: 'CV', link: `mailto:${email}?subject=CV%20request` },
     { label: 'GitHub', link: github, external: true },
+    { label: 'Instagram', link: instagram, external: true },
     { label: 'Contact', link: '#contact' },
   ]
 
@@ -42,7 +44,6 @@ export default function MobileStaggeredMenu({ email, github, reducedMotion }: Mo
       <nav aria-label="Mobile navigation">
         <ol>{items.map((item, index) => <li key={item.label} style={{ '--i': index } as CSSProperties}>
           <a href={item.link} target={item.external ? '_blank' : undefined} rel={item.external ? 'noreferrer' : undefined} onClick={() => setOpen(false)}>
-            <span className="mobile-menu-number">{String(index + 1).padStart(2, '0')}</span>
             <span className="mobile-menu-label">{item.label}</span>
           </a>
         </li>)}</ol>

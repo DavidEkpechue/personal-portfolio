@@ -17,6 +17,7 @@ import { domains, technologies } from '../data/portfolio'
 import type { Project } from '../data/portfolio'
 import { settleWhenNear } from '../graph/settle'
 import { useNearViewport } from '../hooks/useNearViewport'
+import { entityColor } from '../graph/palette'
 
 type LocalKind = 'project' | 'technology' | 'domain'
 
@@ -295,7 +296,7 @@ export default function LocalProjectGraph({ project, emphasis, selectedId, activ
         ref={element => { if (element) nodeElements.current.set(node.id, element); else nodeElements.current.delete(node.id) }}
         type="button"
         className={`local-graph-node is-${node.kind} ${emphasised ? 'is-emphasised' : ''} ${selected ? 'is-selected' : ''} ${selectedId !== project.id && selectedRelated.has(node.id) ? 'is-selected-related' : ''} ${dimmed ? 'is-dimmed' : ''}`}
-        style={{ '--local-node-size': `${node.kind === 'project' ? 7 + Math.sqrt(node.connections + 1) * 1.5 : 3 + Math.sqrt(node.connections + 1) * 1.2}px` } as CSSProperties}
+        style={{ '--local-node-size': `${node.kind === 'project' ? 7 + Math.sqrt(node.connections + 1) * 1.5 : 3 + Math.sqrt(node.connections + 1) * 1.2}px`, '--node-color': entityColor(node.kind, node.id) } as CSSProperties}
         data-label-tier={labelTier}
         onPointerDown={() => { clickScrollRef.current = window.scrollY }}
         onPointerEnter={() => setHoveredId(node.id)}
@@ -318,6 +319,6 @@ export default function LocalProjectGraph({ project, emphasis, selectedId, activ
         tabIndex={labelTier === 'project' || labelTier === 'core' ? 0 : -1}
       ><span aria-hidden="true" /><strong>{node.label}</strong></button>
     })}</div>
-    <p className="local-graph-instruction">Drag to inspect · select a node to reframe</p>
+    <p className="local-graph-instruction">Drag a node to inspect it, or select one to reframe the chart</p>
   </div>
 }

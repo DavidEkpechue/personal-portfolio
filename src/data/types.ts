@@ -107,4 +107,5 @@ export interface Profile {
   intro: string
   email: string
   github: string
+  instagram: string
 }

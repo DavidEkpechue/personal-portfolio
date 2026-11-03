@@ -7,10 +7,10 @@ import ASCIIText from './reactbits/ASCIIText'
 const technologyName = (id: string) => technologies.find(technology => technology.id === id)?.name ?? id
 
 const projectPalettes: Record<string, [string, string, string]> = {
-  minglr: ['#07040d', '#8f55ff', '#f4edff'],
-  'agent-forge': ['#05040b', '#7058e8', '#eeebff'],
-  '4thspace': ['#09040d', '#bd5eff', '#faedff'],
-  izrosh: ['#0a050b', '#a64f85', '#fff0fa'],
+  minglr: ['#070b16', '#d9b56e', '#f2ead8'],
+  'agent-forge': ['#060a14', '#cfa65c', '#efe7d4'],
+  '4thspace': ['#080c18', '#e3c486', '#f4ecdb'],
+  izrosh: ['#090c16', '#c8995a', '#f1e6d2'],
 }
 
 const sourceLabels: Record<ProjectMediaState['sourceType'], string> = {
@@ -104,6 +104,8 @@ export default function ProjectMedia({ project, states, onEmphasis, reducedMotio
   const [activeIndex, setActiveIndex] = useState(0)
   const [visible, setVisible] = useState(false)
   const [near, setNear] = useState(false)
+  // Keyboard changes are instant: animating a repeated key press only adds lag.
+  const [instant, setInstant] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const swipeRef = useRef<{ x: number; y: number } | null>(null)
   // Generated frames are only drawn once the viewer approaches the viewport.
@@ -134,10 +136,10 @@ export default function ProjectMedia({ project, states, onEmphasis, reducedMotio
   }, [activeIndex, onEmphasis, states, visible])
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'ArrowRight') { event.preventDefault(); show(activeIndex + 1) }
-    if (event.key === 'ArrowLeft') { event.preventDefault(); show(activeIndex - 1) }
+    if (event.key === 'ArrowRight') { event.preventDefault(); setInstant(true); show(activeIndex + 1) }
+    if (event.key === 'ArrowLeft') { event.preventDefault(); setInstant(true); show(activeIndex - 1) }
   }
-  const onPointerDown = (event: PointerEvent<HTMLDivElement>) => { if (event.pointerType !== 'mouse') swipeRef.current = { x: event.clientX, y: event.clientY } }
+  const onPointerDown = (event: PointerEvent<HTMLDivElement>) => { setInstant(false); if (event.pointerType !== 'mouse') swipeRef.current = { x: event.clientX, y: event.clientY } }
   const onPointerUp = (event: PointerEvent<HTMLDivElement>) => {
     const start = swipeRef.current
     swipeRef.current = null
@@ -146,12 +148,12 @@ export default function ProjectMedia({ project, states, onEmphasis, reducedMotio
     if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(event.clientY - start.y)) show(activeIndex + (dx < 0 ? 1 : -1))
   }
 
-  const accent = projectPalettes[project.id]?.[1] ?? states[0]?.palette[1] ?? '#8f55ff'
-  return <figure className={`media-viewer media-${project.id} ${reducedMotion ? 'is-reduced' : ''}`} style={{ '--media-accent': accent } as CSSProperties} data-state={activeState?.id}>
+  const accent = projectPalettes[project.id]?.[1] ?? states[0]?.palette[1] ?? '#d9b56e'
+  return <figure className={`media-viewer media-${project.id} ${reducedMotion ? 'is-reduced' : ''} ${instant ? 'is-instant' : ''}`} onPointerDownCapture={() => setInstant(false)} style={{ '--media-accent': accent } as CSSProperties} data-state={activeState?.id}>
     <div className="media-chrome">
-      <span className="media-chrome-dots" aria-hidden="true"><i /><i /><i /></span>
+      
       <span className="media-chrome-title">{project.title} <span aria-hidden="true">/</span> {activeState?.label}</span>
-      <span className="media-chrome-count">{String(activeIndex + 1).padStart(2, '0')} / {String(count).padStart(2, '0')}</span>
+      <span className="media-chrome-count">Plate <span className="data">{activeIndex + 1}</span> of <span className="data">{count}</span></span>
     </div>
     <div
       ref={rootRef}

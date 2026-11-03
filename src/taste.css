@@ -1,0 +1,114 @@
+/*
+  Taste and motion pass, loaded last. Rules from the taste skill (Leonxlnx)
+  and Emil Kowalski's design-engineering skill:
+  - structure from space and tone, not hairline rules and outlined boxes;
+  - one radius rule: surfaces nearly square, controls fully round;
+  - numerals in the text face, five type sizes far apart;
+  - motion with a strong ease-out, under 300ms for interface feedback,
+    press feedback on everything pressable, hover only where a pointer
+    hovers, nothing animated on keyboard actions.
+*/
+:root {
+  --ease-out: cubic-bezier(.23,1,.32,1);
+  --ease-in-out: cubic-bezier(.77,0,.175,1);
+  --ease-drawer: cubic-bezier(.32,.72,0,1);
+  --radius-surface: 4px;
+  --text-sm: 13px;
+  --text-md: 15px;
+  --text-lg: 18px;
+  --text-xl: 24px;
+}
+.data { font-family: inherit; font-size: inherit; font-variant-numeric: tabular-nums; }
+.media-viewer .ascii-resolve { font-family: var(--font-display); }
+
+/* No hairlines: rows separate by space, panels by a tone step. */
+.topbar, .content-section, .project-showcase, .project-copy-block dl div, .supporting-projects, .supporting-projects header,
+.supporting-projects > button, .experience-list, .experience-list article, .cv-line, .contact-register, .contact-register a, .chart-key,
+.graph-toolbar, .quick-orbits button, .media-viewer, .media-chrome, .media-caption, .project-media-stage > header, footer,
+.local-project-graph, .local-node-inspector, .technology-map-shell, .technology-inspector, .technology-map-shell > header, .technology-inspector > header,
+.local-node-inspector dl div, .technology-inspector dl div, .star-tooltip, .star-preview, .explore-bar, .focus-panel dl div, .universe-search input {
+  border-color: transparent !important;
+}
+.hero::before { display: none; }
+.topbar { background: rgba(7,11,22,.92); }
+.universe-search input { padding-inline: 14px; border-radius: 999px; background: var(--plate); }
+.local-project-graph, .local-node-inspector, .technology-map-shell, .technology-inspector { position: relative; isolation: isolate; overflow: hidden; border-radius: var(--radius-surface); background: var(--plate) !important; box-shadow: none !important; }
+.media-viewer { border-radius: var(--radius-surface); background: var(--plate); box-shadow: 0 30px 60px -40px rgba(0,0,0,.9); }
+.media-chrome, .media-caption { background: var(--plate-raised); }
+.star-tooltip { border-radius: var(--radius-surface); background: var(--plate-raised); }
+.star-preview { border-radius: var(--radius-surface) var(--radius-surface) 0 0; background: var(--plate-raised); }
+.project-copy-block dl { gap: 18px; }
+.project-copy-block dl div { padding-top: 0; }
+.contact-register a { padding: 18px 0; }
+.experience-list article { padding: 28px 0; }
+.supporting-projects > button { padding: 22px 0; }
+.chart-key { margin-top: 44px; padding-top: 0; }
+
+/* Five sizes, far apart, for the interface text these layers own. */
+.topbar nav a, .project-actions button, .project-actions a, .media-tabs button, .button-primary, .button-ghost, .star-border-inner,
+.supporting-projects > button span, .chart-key ul, .media-caption p, .project-copy-block dd, .experience-list article > p:not(.experience-period),
+.star-preview-copy, .hero .hero-line, .section-heading p { font-size: var(--text-md); }
+.chart-key figcaption, .chart-key p, .project-overline, .project-copy-block dt, .media-source, .media-chrome-count, .star-tooltip > span,
+.star-tooltip > small, .local-graph-heading, .local-graph-instruction, .local-node-inspector > header, .technology-map-shell > header,
+.technology-inspector > header, .quick-orbits > span, .universe-search label span, .quick-orbits button, .supporting-projects > button small,
+footer, .star-preview-kind, .star-preview-meta, .project-media-stage > header p, .contact-register a { font-size: var(--text-sm); }
+.media-chrome-title, .star-tooltip strong, .experience-list h3 span { font-size: var(--text-lg); }
+.project-media-stage > header span, .supporting-projects header span, .supporting-projects > button strong { font-size: var(--text-xl); }
+
+/* About reads as a paragraph, not a four-line headline. */
+.about-copy { max-width: 40ch; }
+.about-copy p { font: 500 clamp(22px, 1.9vw, 27px)/1.4 var(--font-display); letter-spacing: 0; }
+
+/* Press feedback on everything pressable. */
+.button-primary, .button-ghost, .star-border, .media-tabs button, .media-nav, .graph-view-controls button, .project-actions button,
+.quick-orbits button, .supporting-projects > button, .return-home, footer button, .topbar nav a[href="#contact"] {
+  transition: transform 160ms var(--ease-out), background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+.button-primary:active, .button-ghost:active, .star-border:active, .media-tabs button:active, .graph-view-controls button:active,
+.project-actions button:active, .quick-orbits button:active, .return-home:active, footer button:active, .topbar nav a[href="#contact"]:active { transform: scale(.97); }
+.media-nav:active { transform: scale(.94); }
+.supporting-projects > button:active { transform: scale(.99); }
+
+/* No hover lift; hover colour changes only where a pointer can hover. */
+.button-ghost:hover, button.button-primary:hover { transform: none; }
+@media not ((hover: hover) and (pointer: fine)) {
+  .button-ghost:hover { background: rgba(238,232,218,.03); border-color: var(--hairline-strong); }
+  .contact-register a:hover, .contact-register a:hover strong { color: inherit; }
+}
+
+/* Contact rows move their text with a transform, never padding. */
+.contact-register a, .contact-register a:hover { padding-left: 0; transition: color 160ms ease; }
+.contact-register a strong { transition: transform 200ms var(--ease-out), color 160ms ease; }
+@media (hover: hover) and (pointer: fine) { .contact-register a:hover strong { transform: translateX(10px); } }
+
+/* StarBorder: the lights travel only while the action is hovered or focused. */
+.star-border-light { opacity: 0; animation-play-state: paused; transition: opacity 200ms ease; }
+.star-border:focus-visible .star-border-light { opacity: .9; animation-play-state: running; }
+@media (hover: hover) and (pointer: fine) { .star-border:hover .star-border-light { opacity: .9; animation-play-state: running; } }
+
+/* Plates: a short crossfade bridged with a slight blur; keyboard changes are instant. */
+.media-frame { filter: blur(2px); transform: none; transition: opacity 260ms var(--ease-out), filter 260ms var(--ease-out); }
+.media-frame.is-active { filter: none; }
+.media-viewer.is-instant .media-frame { transition: none; }
+
+/* Tooltip scales in from the star's side in 140ms. */
+.star-tooltip { scale: .97; transform-origin: left top; transition: opacity 140ms var(--ease-out), scale 140ms var(--ease-out); }
+.star-tooltip.is-visible { scale: 1; }
+
+/* Phone sheet uses the drawer curve. */
+@media (max-width: 760px) { .star-preview { animation: sheet-up 420ms var(--ease-drawer); } }
+
+/* Spotlight lamp, moved by transform rather than CSS variables on the panel. */
+.local-project-graph::after, .local-node-inspector::after, .technology-map-shell::after, .technology-inspector::after { display: none; }
+.spotlight-lamp { position: absolute; z-index: 0; top: -280px; left: -280px; width: 560px; height: 560px; border-radius: 50%; opacity: 0; pointer-events: none; background: radial-gradient(circle, rgba(var(--brass-rgb),.1), transparent 65%); transition: opacity 300ms ease; will-change: transform; }
+.is-lit > .spotlight-lamp { opacity: 1; }
+
+/* Sight ring: solid, fixed size; script scales it with a transform. */
+.star-reticle { --reticle-size: 30px; }
+.star-reticle::before { border-style: solid; border-color: rgba(var(--brass-rgb),.6); }
+
+@media (prefers-reduced-motion: reduce) {
+  .media-frame { filter: none; transition: opacity 150ms linear; }
+  .star-tooltip { scale: 1; }
+  .button-primary:active, .button-ghost:active, .star-border:active { transform: none; }
+}

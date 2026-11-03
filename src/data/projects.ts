@@ -31,7 +31,7 @@ const media = (
   eyebrow: string,
   description: string,
   emphasis: string[],
-  palette: ProjectMediaState['palette'] = ['#08050e', '#8f55ff', '#f4edff'],
+  palette: ProjectMediaState['palette'] = ['#070b16', '#d9b56e', '#f2ead8'],
   asset: Partial<Pick<ProjectMediaState, 'src' | 'alt' | 'sourceType' | 'fit' | 'position' | 'aspectRatio'>> = {},
 ): ProjectMediaState => ({
   id,
