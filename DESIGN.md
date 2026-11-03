@@ -16,10 +16,10 @@ Mode: **Experience** (Impeccable). The constellation leads; the interface recede
 | `--brass` / `--brass-bright` | `#cfa65c` / `#e6c98b` | Interaction only: links, focus, selection, the sight ring |
 
 Domain colours (`src/graph/palette.ts`) are jewel tones loosely following stellar spectral
-colours. **Colour always means a domain.** A project glows in its signature domain's colour,
-a technology in its domain's colour, and a link in the colour of the technology it reaches.
-At rest the chart is quiet: neutral links, project names only. Colour and labels arrive on
-hover, selection or zoom.
+colours. **Colour always means a domain, and it is earned by attention.** At rest the whole
+site is ink and brass: white stars with brass halos, neutral links, project names only. When
+a star is hovered or selected, it and the technologies it touches take their domain colours
+and its links light up. Sparks, sections and panels stay brass.
 
 ## Type
 
@@ -27,6 +27,14 @@ hover, selection or zoom.
   star-chart labels. Never set a full sentence at display size.
 - **Text and interface:** IBM Plex Sans (variable). Numerals use `tabular-nums`; no monospace.
 - **Scale:** `--text-sm` 13, `--text-md` 15, `--text-lg` 18, `--text-xl` 24, then display sizes.
+
+## Voice
+
+Plain words carry the meaning; a second, italic display line carries the magic.
+**"Code is magic"** is the recurring motif (hero, astrolabe inscription, About, footer,
+mobile menu). Incantation lines (`.incantation`) sit under section headings and in empty
+states, short and dry: "Email arrives faster than an owl." They never replace the factual
+label, never make claims about the work, and never appear more than once per section.
 
 ## Shape and structure
 
