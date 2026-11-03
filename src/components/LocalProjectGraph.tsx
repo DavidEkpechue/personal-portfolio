@@ -15,6 +15,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, KeyboardEvent } from 'react'
 import { domains, technologies } from '../data/portfolio'
 import type { Project } from '../data/portfolio'
+import { settleWhenNear } from '../graph/settle'
+import { useNearViewport } from '../hooks/useNearViewport'
 
 type LocalKind = 'project' | 'technology' | 'domain'
 
@@ -98,6 +100,7 @@ export default function LocalProjectGraph({ project, emphasis, selectedId, activ
   const simulationRef = useRef<ReturnType<typeof forceSimulation<LocalNode>> | null>(null)
   const clickScrollRef = useRef<number | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const near = useNearViewport(rootRef)
   const data = useMemo(() => graphData(project), [project])
   const related = useMemo(() => {
     if (!hoveredId) return null
@@ -128,7 +131,8 @@ export default function LocalProjectGraph({ project, emphasis, selectedId, activ
 
   useEffect(() => {
     const root = rootRef.current
-    if (!root) return
+    // Nothing is measured or simulated until the graph approaches the viewport.
+    if (!root || !near) return
     const rect = root.getBoundingClientRect()
     let width = Math.max(320, rect.width)
     let height = Math.max(320, rect.height)
@@ -169,7 +173,8 @@ export default function LocalProjectGraph({ project, emphasis, selectedId, activ
         const element = nodeElements.current.get(node.id)
         if (element) {
           const alignRight = (node.x ?? 0) > width * .7
-          element.dataset.align = alignRight ? 'right' : 'left'
+          const align = alignRight ? 'right' : 'left'
+          if (element.dataset.align !== align) element.dataset.align = align
           element.style.transform = `translate3d(${node.x ?? 0}px, ${node.y ?? 0}px, 0) translate(${alignRight ? '-100%' : '0'}, -50%)`
         }
       })
@@ -242,24 +247,25 @@ export default function LocalProjectGraph({ project, emphasis, selectedId, activ
       else render()
     })
     resizeObserver.observe(root)
-    simulation.alpha(reducedMotion ? .18 : .72).restart()
-    if (reducedMotion) {
-      simulation.tick(60).stop()
-      render()
-    }
+    // Settle without per-tick DOM writes, spread over frames once the graph
+    // nears the viewport; only interaction and the active chapter animate.
+    simulation.stop().alpha(reducedMotion ? .18 : .72)
+    render()
+    const cancelSettle = settleWhenNear(root, simulation, reducedMotion ? 60 : 150, render, 30)
     return () => {
+      cancelSettle()
       resizeObserver.disconnect()
       simulation.stop().on('tick.render', null)
       simulationRef.current = null
     }
-  }, [data, project.id, reducedMotion])
+  }, [data, near, project.id, reducedMotion])
 
   useEffect(() => {
     const simulation = simulationRef.current
     if (!simulation || reducedMotion) return
     if (active) simulation.alpha(Math.max(simulation.alpha(), .18)).restart()
     else simulation.alphaTarget(0)
-  }, [active, reducedMotion])
+  }, [active, near, reducedMotion])
 
   const highlighted = new Set(emphasis)
   const selectedRelated = new Set([selectedId])

@@ -90,6 +90,9 @@ export default function ForceGraph({ selection, hoveredId, emphasis, compact, re
   const [settings, setSettings] = useState(DEFAULT_PHYSICS)
   const settingsRef = useRef(settings)
   const configurationKeyRef = useRef('')
+  const interactiveRef = useRef(interactive)
+  const projectAlignRef = useRef(new Map<string, boolean>())
+  interactiveRef.current = interactive
   selectionRef.current = selection
   compactRef.current = compact
   reducedMotionRef.current = reducedMotion
@@ -114,11 +117,18 @@ export default function ForceGraph({ selection, hoveredId, emphasis, compact, re
       const y = Math.max(18, Math.min(bounds.height - 18, node.y ?? bounds.height / 2))
       node.x = x
       node.y = y
-      const alignRight = x > dimensionsRef.current.width * .78
-      element.dataset.align = alignRight ? 'right' : 'left'
+      const alignRight = projectAlignRef.current.get(node.id) ?? x > dimensionsRef.current.width * .78
+      const align = alignRight ? 'right' : 'left'
+      if (element.dataset.align !== align) element.dataset.align = align
       element.style.transform = `translate3d(${x}px, ${y}px, 0) translate(${alignRight ? '-100%' : '0'}, -50%)`
     }
-    const acceptedLabels: Array<{ left: number; right: number; top: number; bottom: number }> = []
+    // Label layout only matters while the constellation is in front; in the
+    // background it is faint, so skip the collision pass on every tick.
+    if (!interactiveRef.current) { renderEdges(); return }
+    type LabelBox = { left: number; right: number; top: number; bottom: number }
+    const acceptedLabels: LabelBox[] = []
+    const collides = (box: LabelBox) => acceptedLabels.some(other => box.left < other.right + 4 && box.right > other.left - 4 && box.top < other.bottom + 3 && box.bottom > other.top - 3)
+    const labelBox = (x: number, y: number, width: number, height: number, rightAligned: boolean): LabelBox => ({ left: rightAligned ? x - width - 10 : x + 10, right: rightAligned ? x - 10 : x + width + 10, top: y - height / 2, bottom: y + height / 2 })
     const labelOrder = [...nodes].sort((a, b) => Number(b.kind === 'project') - Number(a.kind === 'project') || b.importance - a.importance)
     for (const node of labelOrder) {
       const element = nodeElements.current.get(node.id)
@@ -127,26 +137,55 @@ export default function ForceGraph({ selection, hoveredId, emphasis, compact, re
       if (tier === 'detail') { element.classList.remove('is-label-occluded'); continue }
       const x = node.x ?? dimensionsRef.current.width / 2
       const y = node.y ?? dimensionsRef.current.height / 2
-      const width = Math.min(node.kind === 'project' ? 190 : 132, Math.max(34, node.name.length * (node.kind === 'project' ? 6.6 : 5.6) + 14))
-      const height = node.kind === 'project' ? 28 : 15
-      const rightAligned = element.dataset.align === 'right'
-      const box = { left: rightAligned ? x - width - 10 : x + 10, right: rightAligned ? x - 10 : x + width + 10, top: y - height / 2, bottom: y + height / 2 }
-      const overlaps = node.kind !== 'project' && acceptedLabels.some(other => box.left < other.right + 4 && box.right > other.left - 4 && box.top < other.bottom + 3 && box.bottom > other.top - 3)
+      if (node.kind === 'project') {
+        // Projects always keep a label: try the other side, then drop the meta line.
+        const nameWidth = node.name.length * 8.4 + 14
+        const fullWidth = Math.min(240, Math.max(nameWidth, 190))
+        const defaultRight = x > dimensionsRef.current.width * .78
+        let rightAligned = defaultRight
+        let box = labelBox(x, y, fullWidth, 32, rightAligned)
+        if (collides(box)) {
+          const flipped = labelBox(x, y, fullWidth, 32, !rightAligned)
+          if (!collides(flipped) && flipped.left > 0 && flipped.right < dimensionsRef.current.width) { rightAligned = !rightAligned; box = flipped }
+        }
+        const compactLabel = collides(box)
+        if (compactLabel) box = labelBox(x, y, Math.min(240, nameWidth), 16, rightAligned)
+        if (rightAligned === defaultRight) projectAlignRef.current.delete(node.id)
+        else projectAlignRef.current.set(node.id, rightAligned)
+        const align = rightAligned ? 'right' : 'left'
+        if (element.dataset.align !== align) {
+          element.dataset.align = align
+          element.style.transform = `translate3d(${x}px, ${y}px, 0) translate(${rightAligned ? '-100%' : '0'}, -50%)`
+        }
+        element.classList.toggle('is-meta-hidden', compactLabel)
+        element.classList.remove('is-label-occluded')
+        acceptedLabels.push(box)
+        continue
+      }
+      const box = labelBox(x, y, Math.min(140, Math.max(34, node.name.length * 6.8 + 14)), 16, element.dataset.align === 'right')
+      const overlaps = collides(box)
       element.classList.toggle('is-label-occluded', overlaps)
-      if (!overlaps || node.kind === 'project') acceptedLabels.push(box)
+      if (!overlaps) acceptedLabels.push(box)
     }
-    for (const link of renderLinks) {
-      const [sourceId, targetId] = linkIds(link)
-      const source = byId.get(sourceId)
-      const target = byId.get(targetId)
-      const line = edgeElements.current.get(linkKey(link))
-      if (!source || !target || !line) continue
-      line.setAttribute('x1', String(source.x ?? 0))
-      line.setAttribute('y1', String(source.y ?? 0))
-      line.setAttribute('x2', String(target.x ?? 0))
-      line.setAttribute('y2', String(target.y ?? 0))
+    renderEdges()
+
+    function renderEdges() {
+      for (const link of renderLinks) {
+        const [sourceId, targetId] = linkIds(link)
+        const source = byId.get(sourceId)
+        const target = byId.get(targetId)
+        const line = edgeElements.current.get(linkKey(link))
+        if (!source || !target || !line) continue
+        line.setAttribute('x1', String(source.x ?? 0))
+        line.setAttribute('y1', String(source.y ?? 0))
+        line.setAttribute('x2', String(target.x ?? 0))
+        line.setAttribute('y2', String(target.y ?? 0))
+      }
     }
   }, [renderLinks])
+
+  // Refresh label layout when the constellation comes back to the front.
+  useEffect(() => { if (interactive) renderPositions() }, [interactive, renderPositions])
 
   const applyViewTransform = useCallback((transform: ZoomTransform) => {
     zoomTransformRef.current = transform
@@ -250,11 +289,19 @@ export default function ForceGraph({ selection, hoveredId, emphasis, compact, re
     })
     resizeObserver.observe(root)
 
-    simulation.alpha(reducedMotionRef.current ? .24 : .62).tick(reducedMotionRef.current ? 48 : 96).alpha(0).stop()
-    renderPositions()
-    root.dataset.simulation = 'settled'
-    root.dataset.alpha = '0.000'
-    if (statusRef.current) statusRef.current.textContent = 'Settled'
+    if (reducedMotionRef.current) {
+      simulation.alpha(.24).tick(48).alpha(0).stop()
+      renderPositions()
+      root.dataset.simulation = 'settled'
+      root.dataset.alpha = '0.000'
+      if (statusRef.current) statusRef.current.textContent = 'Settled'
+    } else {
+      // Nodes start on their home slots and settle on screen over the first
+      // second instead of blocking first paint with a synchronous layout.
+      simulation.alpha(.62).tick(8)
+      renderPositions()
+      simulation.alpha(.5).restart()
+    }
 
     return () => {
       resizeObserver.disconnect()

@@ -196,9 +196,9 @@ export const projects: Project[] = [
     ],
     links: {},
     media: [
-      media('discovery', 'Discovery', 'Catalogue', 'Travel packages and destination search', ['react', 'mongodb'], undefined, { src: '/projects/eze-travels/eze-home.png', alt: 'Live local Eze Travels public home interface', sourceType: 'live-capture', fit: 'cover', position: 'center top' }),
-      media('enquiries', 'Enquiries', 'Advisor workflow', 'Travel briefs and follow-up', ['express', 'mongoose'], undefined, { src: '/projects/eze-travels/eze-request.png', alt: 'Live local Eze Travels getaway request interface', sourceType: 'live-capture', fit: 'cover', position: 'center top' }),
-      media('administration', 'Administration', 'Content layer', 'Package and enquiry management', ['react', 'node', 'mongodb'], undefined, { src: '/projects/eze-travels/eze-admin.png', alt: 'Live local Eze Travels administration login interface', sourceType: 'live-capture', fit: 'contain', position: 'center center' }),
+      media('discovery', 'Discovery', 'Catalogue', 'Travel packages and destination search', ['react', 'mongodb'], undefined, { src: '/projects/eze-travels/eze-home.webp', alt: 'Live local Eze Travels public home interface', sourceType: 'live-capture', fit: 'cover', position: 'center top' }),
+      media('enquiries', 'Enquiries', 'Advisor workflow', 'Travel briefs and follow-up', ['express', 'mongoose'], undefined, { src: '/projects/eze-travels/eze-request.webp', alt: 'Live local Eze Travels getaway request interface', sourceType: 'live-capture', fit: 'cover', position: 'center top' }),
+      media('administration', 'Administration', 'Content layer', 'Package and enquiry management', ['react', 'node', 'mongodb'], undefined, { src: '/projects/eze-travels/eze-admin.webp', alt: 'Live local Eze Travels administration login interface', sourceType: 'live-capture', fit: 'contain', position: 'center center' }),
     ],
     graph: { importance: 3, visibility: 'secondary', primaryTechnologies: ['react', 'node', 'express', 'mongodb'] },
   },

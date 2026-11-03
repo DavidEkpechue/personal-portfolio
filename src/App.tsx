@@ -5,11 +5,12 @@ import LocalProjectGraph from './components/LocalProjectGraph'
 import ProjectMedia from './components/ProjectMedia'
 import ProjectNodeInspector from './components/ProjectNodeInspector'
 import TechnologyExplorer from './components/TechnologyExplorer'
-import Galaxy from './components/reactbits/Galaxy'
+import Starfield from './components/Starfield'
 import MobileStaggeredMenu from './components/reactbits/MobileStaggeredMenu'
 import { domains, experience, profile, projects, searchKnowledgeBase, statusLabel, technologies } from './data/portfolio'
 import type { Project, Selection } from './data/portfolio'
 import { getGraphNode } from './graph/model'
+import { useAnchorCorrection } from './hooks/useAnchorCorrection'
 import { usePreferences } from './hooks/usePreferences'
 import { useSelection } from './hooks/useSelection'
 
@@ -58,7 +59,14 @@ function Header({ onHome, reducedMotion }: { onHome: () => void; reducedMotion: 
 }
 
 function HomeIntroduction() {
-  return <div className="hero-copy"><p className="eyebrow">Interactive portfolio</p><h1 id="hero-title">David<br />Ekpechue</h1><p className="role"><span aria-hidden="true" /> Software Engineer</p><p className="hero-line">{profile.intro}</p></div>
+  const flagshipCount = projects.filter(project => project.tier === 'flagship').length
+  return <div className="hero-copy">
+    <p className="eyebrow"><span className="eyebrow-pulse" aria-hidden="true" />Software Engineer · Ireland</p>
+    <h1 id="hero-title">David<br /><span>Ekpechue</span></h1>
+    <p className="hero-line">{profile.intro}</p>
+    <div className="hero-actions"><a className="button-primary" href="#work">View selected work <span aria-hidden="true">↓</span></a><a className="button-ghost" href={`mailto:${profile.email}`}>Get in touch</a></div>
+    <dl className="hero-stats"><div><dt>Flagship systems</dt><dd>{String(flagshipCount).padStart(2, '0')}</dd></div><div><dt>Projects mapped</dt><dd>{String(projects.length).padStart(2, '0')}</dd></div><div><dt>Technologies</dt><dd>{technologies.length}</dd></div></dl>
+  </div>
 }
 
 function SectionHeading({ number, title, note, id }: { number: string; title: string; note: string; id: string }) {
@@ -94,11 +102,12 @@ export default function App() {
   const { selection, select } = useSelection()
   const { reducedMotion, compact } = usePreferences()
   const chapter = useActiveChapter()
+  useAnchorCorrection()
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [mediaEmphasis, setMediaEmphasis] = useState<string[]>([])
   const hoveredNode = getGraphNode(hoveredId)
   const graphSelection = selection ?? chapterSelection(chapter)
-  const graphInteractive = chapter === 'hero' || chapter === 'technologies' || Boolean(selection)
+  const graphInteractive = chapter === 'hero' || Boolean(selection)
   const flagshipProjects = useMemo(() => projects.filter(project => project.tier === 'flagship'), [])
   const supportingProjects = useMemo(() => projects.filter(project => project.tier !== 'flagship' && project.graph.visibility !== 'detail'), [])
   const ambientMode = selection
@@ -111,8 +120,7 @@ export default function App() {
   useEffect(() => { const onKeyDown = (event: KeyboardEvent) => { if (event.key === '/' && document.activeElement?.tagName !== 'INPUT') { event.preventDefault(); document.getElementById('universe-query')?.focus() }; if (event.key === 'Escape' && selection) selectEntity(null) }; window.addEventListener('keydown', onKeyDown); return () => window.removeEventListener('keydown', onKeyDown) }, [selectEntity, selection])
 
   return <div className="site-shell" data-chapter-active={chapter}>
-    <Galaxy mode={ambientMode} compact={compact} reducedMotion={reducedMotion} />
-    <div className="atmospheric-field" aria-hidden="true"><span /><span /><span /></div>
+    <Starfield mode={ambientMode} compact={compact} />
     <Header onHome={() => { selectEntity(null); window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' }) }} reducedMotion={reducedMotion} />
     <div className={`constellation-stage ${graphInteractive ? 'is-interactive' : 'is-passive'} ${selection ? 'has-route-focus' : ''}`}><ForceGraph selection={graphSelection} hoveredId={hoveredId} emphasis={mediaEmphasis} compact={compact} reducedMotion={reducedMotion} interactive={graphInteractive} onHover={setHoveredId} onSelect={selectEntity} /></div>
     <main id="main-content">

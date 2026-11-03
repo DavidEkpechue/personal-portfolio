@@ -8,6 +8,8 @@ import type { CSSProperties } from 'react'
 import { domains, projects, relationships, statusLabel, technologies } from '../data/portfolio'
 import type { Project, Selection, Technology } from '../data/portfolio'
 import { getProjectNodeColor } from '../graph/colors'
+import { settleWhenNear } from '../graph/settle'
+import { useNearViewport } from '../hooks/useNearViewport'
 
 type ExplorerEntity = { kind: 'project' | 'technology'; id: string } | null
 
@@ -151,6 +153,8 @@ export default function TechnologyExplorer({ compact, reducedMotion, onOpen }: {
   const edgeRefs = useRef(new Map<string, SVGLineElement>())
   const simulationRef = useRef<Simulation<ExplorerNode, ExplorerLink> | null>(null)
   const boundsRef = useRef({ width: 760, height: 620 })
+  const settledRef = useRef(false)
+  const near = useNearViewport(rootRef)
   const nodes = useMemo(() => createExplorerNodes(compact), [compact])
   const links = useMemo(() => createExplorerLinks(nodes), [nodes])
   const [entity, setEntity] = useState<ExplorerEntity>(null)
@@ -177,7 +181,8 @@ export default function TechnologyExplorer({ compact, reducedMotion, onOpen }: {
 
   useEffect(() => {
     const root = rootRef.current
-    if (!root) return
+    // Nothing is measured or simulated until the map approaches the viewport.
+    if (!root || !near) return
     const rect = root.getBoundingClientRect()
     const width = Math.max(320, rect.width)
     const height = Math.max(430, rect.height)
@@ -191,7 +196,8 @@ export default function TechnologyExplorer({ compact, reducedMotion, onOpen }: {
         const element = nodeRefs.current.get(node.id)
         if (!element) return
         const alignRight = node.x > bounds.width * .72
-        element.dataset.align = alignRight ? 'right' : 'left'
+        const align = alignRight ? 'right' : 'left'
+        if (element.dataset.align !== align) element.dataset.align = align
         element.style.transform = `translate3d(${node.x}px,${node.y}px,0) translate(${alignRight ? '-100%' : '0'},-50%)`
       })
       links.forEach(link => {
@@ -222,15 +228,18 @@ export default function TechnologyExplorer({ compact, reducedMotion, onOpen }: {
     const resizeObserver = new ResizeObserver(entries => {
       const next = entries[0]?.contentRect
       if (!next || next.width < 1 || next.height < 1) return
+      const previous = boundsRef.current
+      if (Math.abs(previous.width - next.width) < 1 && Math.abs(previous.height - next.height) < 1) return
       boundsRef.current = { width: next.width, height: next.height }
       simulation.force('x', forceX<ExplorerNode>(node => targetX(node, next.width)).strength(node => node.kind === 'project' ? .018 : .065))
       simulation.force('y', forceY<ExplorerNode>(node => targetY(node, next.height)).strength(node => node.kind === 'project' ? .018 : .065))
       simulation.alpha(.12).restart()
     })
     resizeObserver.observe(root)
-    if (reducedMotion) { simulation.stop(); simulation.tick(80); render() }
+    simulation.stop()
+    settledRef.current = false
     return () => { resizeObserver.disconnect(); simulation.stop(); simulationRef.current = null }
-  }, [compact, links, nodes, reducedMotion])
+  }, [compact, links, near, nodes, reducedMotion])
 
   useEffect(() => {
     const simulation = simulationRef.current
@@ -244,9 +253,13 @@ export default function TechnologyExplorer({ compact, reducedMotion, onOpen }: {
     const targetY = (node: ExplorerNode) => focus && connected.has(node.id) || inFocusedDomain(node) ? rect.height * .5 : node.kind === 'project' ? rect.height * .5 : rect.height * (domainPositions[node.domainId ?? 'backend']?.[1] ?? .5)
     const strength = (node: ExplorerNode) => node.id === focus ? .17 : focus && connected.has(node.id) ? .04 : inFocusedDomain(node) ? .07 : node.kind === 'project' ? .015 : .055
     simulation.force('x', forceX<ExplorerNode>(targetX).strength(strength)).force('y', forceY<ExplorerNode>(targetY).strength(strength))
-    if (reducedMotion) { simulation.stop(); simulation.alpha(.18).tick(44); return }
+    // The first layout settles across frames once the map nears the viewport
+    // (tick() emits no events, so render by hand).
+    const renderNow = () => (simulation.on('tick') as (() => void) | undefined)?.()
+    if (!settledRef.current) { settledRef.current = true; simulation.stop(); simulation.alpha(.7); return settleWhenNear(root, simulation, reducedMotion ? 80 : 170, renderNow, 20) }
+    if (reducedMotion) { simulation.stop(); simulation.alpha(.18).tick(44); renderNow(); return }
     simulation.alpha(Math.max(simulation.alpha(), .2)).restart()
-  }, [connected, entity, reducedMotion, selectedDomain])
+  }, [connected, entity, near, reducedMotion, selectedDomain])
 
   const hasFilter = highlightedIds.size > 0
   const activeDomainName = domains.find(domain => domain.id === activeDomain)?.name

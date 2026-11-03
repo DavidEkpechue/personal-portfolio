@@ -73,6 +73,8 @@ function initialPosition(node: GraphNode, index: number, dimensions: GraphDimens
   const graphCenterX = dimensions.width * (compact ? .5 : .69)
   const graphCenterY = dimensions.height * .5
   const region = node.kind === 'domain' ? domainRegions[node.id] : undefined
+  const ring = node.kind === 'project' ? projectRingTarget(node, dimensions, compact) : null
+  if (ring) return ring
   return {
     x: region ? dimensions.width * region[0] : graphCenterX + Math.cos(angle) * radius,
     y: region ? dimensions.height * region[1] : graphCenterY + Math.sin(angle) * radius * .72,
@@ -110,9 +112,38 @@ function isSelectionLink(link: PhysicsLink, selection: Selection) {
   return source === selection.id || target === selection.id
 }
 
+// Projects hold slots on an ellipse so their labels never pile up in the
+// centre; the most important projects are spread evenly around it.
+const projectSlots = (() => {
+  const projectNodes = graphNodes.filter(node => node.kind === 'project')
+  const lead = projectNodes.filter(node => node.importance >= 5)
+  const rest = projectNodes.filter(node => node.importance < 5)
+  const total = projectNodes.length
+  const slots = new Map<string, number>()
+  lead.forEach((node, index) => slots.set(node.id, Math.round(index * total / Math.max(1, lead.length))))
+  let cursor = 0
+  rest.forEach(node => {
+    while ([...slots.values()].includes(cursor)) cursor += 1
+    slots.set(node.id, cursor)
+  })
+  return { slots, total }
+})()
+
+function projectRingTarget(node: Pick<GraphNode, 'id'>, dimensions: GraphDimensions, compact: boolean) {
+  const slot = projectSlots.slots.get(node.id)
+  if (slot === undefined) return null
+  const angle = slot / projectSlots.total * Math.PI * 2 - Math.PI / 2 + .3
+  const centreX = dimensions.width * (compact ? .5 : .69)
+  const radiusX = compact ? dimensions.width * .32 : Math.min(dimensions.width * .25, 380)
+  const radiusY = dimensions.height * (compact ? .32 : .36)
+  return { x: centreX + Math.cos(angle) * radiusX, y: dimensions.height * .5 + Math.sin(angle) * radiusY }
+}
+
 function homeTarget(node: PhysicsNode, dimensions: GraphDimensions, compact: boolean) {
   const region = domainRegions[node.id]
   if (region) return { x: dimensions.width * region[0], y: dimensions.height * region[1] }
+  const ring = node.kind === 'project' ? projectRingTarget(node, dimensions, compact) : null
+  if (ring) return ring
   return {
     x: dimensions.width * (compact ? .5 : .69),
     y: dimensions.height * .5,
@@ -172,7 +203,7 @@ export function configureSimulation(
     const depth = focusDepth(node, selection)
     if (depth === 1) return .018
     if (depth === 2) return .004
-    return node.kind === 'domain' ? .012 : node.kind === 'project' ? .006 : .0015
+    return node.kind === 'domain' ? .012 : node.kind === 'project' ? selection ? .006 : .16 : .0015
   })
 
   const yForce = forceY<PhysicsNode>(node => {
@@ -186,7 +217,7 @@ export function configureSimulation(
     const depth = focusDepth(node, selection)
     if (depth === 1) return .018
     if (depth === 2) return .004
-    return node.kind === 'domain' ? .012 : node.kind === 'project' ? .006 : .0015
+    return node.kind === 'domain' ? .012 : node.kind === 'project' ? selection ? .006 : .16 : .0015
   })
 
   const collision = forceCollide<PhysicsNode>()
