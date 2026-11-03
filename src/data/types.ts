@@ -107,7 +107,5 @@ export interface Profile {
   intro: string
   email: string
   github: string
-  /** Full profile URL; the LinkedIn links appear once this is set. */
-  linkedin?: string
-  instagram: string
+  linkedin: string
 }

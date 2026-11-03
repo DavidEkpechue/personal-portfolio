@@ -4,13 +4,12 @@ import type { CSSProperties } from 'react'
 interface MobileStaggeredMenuProps {
   email: string
   github: string
-  linkedin?: string
-  instagram: string
+  linkedin: string
   reducedMotion: boolean
 }
 
 // Staggered menu driven by CSS transitions; --i offsets each label's delay.
-export default function MobileStaggeredMenu({ email, github, linkedin, instagram, reducedMotion }: MobileStaggeredMenuProps) {
+export default function MobileStaggeredMenu({ email, github, linkedin, reducedMotion }: MobileStaggeredMenuProps) {
   const [open, setOpen] = useState(false)
   const items = [
     { label: 'Work', link: '#work' },
@@ -19,8 +18,7 @@ export default function MobileStaggeredMenu({ email, github, linkedin, instagram
     { label: 'About', link: '#about' },
     { label: 'CV', link: `mailto:${email}?subject=CV%20request` },
     { label: 'GitHub', link: github, external: true },
-    ...(linkedin ? [{ label: 'LinkedIn', link: linkedin, external: true }] : []),
-    { label: 'Instagram', link: instagram, external: true },
+    { label: 'LinkedIn', link: linkedin, external: true },
     { label: 'Contact', link: '#contact' },
   ]
 
