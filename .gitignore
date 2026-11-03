@@ -1,6 +1,5 @@
+node_modules
+dist
 .DS_Store
-Thumbs.db
-.vscode/
-node_modules/
-dist/
-*.tsbuildinfo
+*.local
+*.log

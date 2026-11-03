@@ -1,41 +1,136 @@
-import { useEffect, useMemo, useState } from 'react'
-import AmbientDots from './components/AmbientDots'
-import GraphScene, { findGraphNode } from './components/GraphScene'
-import MediaSlider from './components/MediaSlider'
-import { domains, experience, getEntity, projects, technologies } from './data/portfolio'
-import type { Selection } from './data/portfolio'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import FocusPanel from './components/FocusPanel'
+import ForceGraph from './components/ForceGraph'
+import LocalProjectGraph from './components/LocalProjectGraph'
+import ProjectMedia from './components/ProjectMedia'
+import ProjectNodeInspector from './components/ProjectNodeInspector'
+import TechnologyExplorer from './components/TechnologyExplorer'
+import Galaxy from './components/reactbits/Galaxy'
+import MobileStaggeredMenu from './components/reactbits/MobileStaggeredMenu'
+import { domains, experience, profile, projects, searchKnowledgeBase, statusLabel, technologies } from './data/portfolio'
+import type { Project, Selection } from './data/portfolio'
+import { getGraphNode } from './graph/model'
+import { usePreferences } from './hooks/usePreferences'
 import { useSelection } from './hooks/useSelection'
 
-const title = (value: string) => value.toUpperCase()
-function ProjectFocus({ id, onMedia }: { id: string; onMedia: (ids: string[]) => void }) { const project = projects.find((item) => item.id === id)!; return <aside className="focus-panel" aria-live="polite"><p className="catalogue">{project.status} / {project.year}</p><h2>{project.title}</h2><p className="focus-intro">{project.shortDescription}</p><dl><div><dt>Role</dt><dd>{project.role}</dd></div><div><dt>Stack</dt><dd>{project.technologies.map((id) => technologies.find((t) => t.id === id)?.name).join(' · ')}</dd></div></dl><MediaSlider states={project.media} onEmphasis={onMedia} /><div className="focus-links">{project.links.live && <a href={project.links.live} target="_blank" rel="noreferrer">Live ↗</a>}{project.links.source && <a href={project.links.source} target="_blank" rel="noreferrer">Source ↗</a>}<a href="#work">Case study ↓</a></div></aside> }
-function TechnologyFocus({ id }: { id: string }) { const technology = technologies.find((item) => item.id === id)!; return <aside className="focus-panel" aria-live="polite"><p className="catalogue">{technology.category} / {technology.proficiency}</p><h2>{technology.name}</h2><p className="focus-intro">{technology.description}</p><dl><div><dt>Usage</dt><dd>{technology.professionalUsage}</dd></div><div><dt>Evidence</dt><dd>{technology.projects.length} related {technology.projects.length === 1 ? 'project' : 'projects'}</dd></div></dl><div className="linked-list"><p>Used in</p>{technology.projects.map((id) => <span key={id}>{projects.find((project) => project.id === id)?.title}</span>)}</div></aside> }
-function DomainFocus({ id }: { id: string }) { const domain = domains.find((item) => item.id === id)!; return <aside className="focus-panel" aria-live="polite"><p className="catalogue">Domain cluster</p><h2>{domain.name}</h2><p className="focus-intro">{domain.description}</p><div className="linked-list"><p>Included technologies</p>{domain.technologies.map((id) => <span key={id}>{technologies.find((technology) => technology.id === id)?.name}</span>)}</div></aside> }
-function FocusPanel({ selection, onMedia }: { selection: Selection; onMedia: (ids: string[]) => void }) { if (!selection) return null; return selection.kind === 'project' ? <ProjectFocus id={selection.id} onMedia={onMedia} /> : selection.kind === 'technology' ? <TechnologyFocus id={selection.id} /> : <DomainFocus id={selection.id} /> }
+type SearchResult = { id: string; kind: 'project' | 'technology' | 'domain'; label: string; meta: string }
+type Chapter = string
+
+const chapterSelection = (chapter: Chapter): Selection => projects.some(project => project.id === chapter) ? { kind: 'project', id: chapter } : null
+
+function useActiveChapter() {
+  const [chapter, setChapter] = useState<Chapter>('hero')
+  useEffect(() => {
+    const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-chapter]'))
+    const visibility = new Map<Element, number>()
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => visibility.set(entry.target, entry.intersectionRatio))
+      const active = elements.reduce<{ name: Chapter; ratio: number }>((best, element) => {
+        const ratio = visibility.get(element) ?? 0
+        return ratio > best.ratio ? { name: element.dataset.chapter ?? 'hero', ratio } : best
+      }, { name: 'hero', ratio: 0 })
+      if (active.ratio > .12) setChapter(active.name)
+    }, { threshold: [0, .12, .25, .42, .62], rootMargin: '-15% 0px -20%' })
+    elements.forEach(element => observer.observe(element))
+    return () => observer.disconnect()
+  }, [])
+  return chapter
+}
+
+function Search({ onSelect }: { onSelect: (selection: Selection) => void }) {
+  const [query, setQuery] = useState('')
+  const results = useMemo<SearchResult[]>(() => searchKnowledgeBase(query), [query])
+  return <div className="universe-search">
+    <label htmlFor="universe-query"><span>Search the universe</span><kbd>/</kbd></label>
+    <input id="universe-query" value={query} onChange={event => setQuery(event.target.value)} aria-label="Search projects, technologies and domains" autoComplete="off" />
+    {query && <div className="search-results" role="listbox" aria-label="Search results">{results.length ? results.map(result => <button key={`${result.kind}-${result.id}`} type="button" role="option" aria-selected="false" onClick={() => { onSelect({ kind: result.kind, id: result.id }); setQuery('') }}><span>{result.label}</span><small>{result.meta}</small></button>) : <p>No matching objects</p>}</div>}
+  </div>
+}
+
+function Header({ onHome, reducedMotion }: { onHome: () => void; reducedMotion: boolean }) {
+  return <>
+    <header className="topbar">
+      <button className="wordmark" type="button" onClick={onHome} aria-label="Return to the portfolio universe"><span className="wordmark-sigil">DE</span><span className="wordmark-title">David Ekpechue</span></button>
+      <nav className="desktop-navigation" aria-label="Primary navigation"><a href="#work">Work</a><a href="#experience">Experience</a><a href="#technologies">Technologies</a><a href={`mailto:${profile.email}?subject=CV%20request`}>CV</a><a href={profile.github} target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a><a href="#contact">Contact</a></nav>
+    </header>
+    <MobileStaggeredMenu email={profile.email} github={profile.github} reducedMotion={reducedMotion} />
+  </>
+}
+
+function HomeIntroduction() {
+  return <div className="hero-copy"><p className="eyebrow">Interactive portfolio</p><h1 id="hero-title">David<br />Ekpechue</h1><p className="role"><span aria-hidden="true" /> Software Engineer</p><p className="hero-line">{profile.intro}</p></div>
+}
+
+function SectionHeading({ number, title, note, id }: { number: string; title: string; note: string; id: string }) {
+  return <header className="section-heading"><span className="section-number">{number}</span><div><h2 id={id}>{title}</h2><p>{note}</p></div></header>
+}
+
+function ProjectShowcase({ project, index, active, reducedMotion, onExplore }: {
+  project: Project
+  index: number
+  active: boolean
+  reducedMotion: boolean
+  onExplore: (selection: Exclude<Selection, null>) => void
+}) {
+  const [localEmphasis, setLocalEmphasis] = useState(project.media[0]?.emphasis ?? [])
+  const [selectedLocalId, setSelectedLocalId] = useState(project.id)
+  const stack = project.graph.primaryTechnologies.map(id => technologies.find(item => item.id === id)?.name).filter(Boolean)
+  const focus = project.domains.slice(0, 3).map(id => domains.find(domain => domain.id === id)?.name).filter(Boolean)
+  useEffect(() => { setLocalEmphasis(project.media[0]?.emphasis ?? []); setSelectedLocalId(project.id) }, [project])
+  return <article className={`project-showcase project-${project.id} ${active ? 'is-active' : ''}`} id={`case-${project.id}`} data-chapter={project.id} data-project={project.id}>
+    <div className="project-copy-block"><p className="project-overline"><span>{String(index + 1).padStart(2, '0')}</span>{project.year ? `${project.year} · ` : ''}{statusLabel(project.status)}</p><h3>{project.title}</h3><p className="project-lede">{project.shortDescription}</p><dl><div><dt>Role</dt><dd>{project.role}</dd></div><div><dt>Core stack</dt><dd>{stack.slice(0, 7).join(' · ') || 'No implementation stack published'}</dd></div><div><dt>Focus</dt><dd>{focus.join(' · ')}</dd></div></dl><div className="project-actions"><button type="button" onClick={() => onExplore({ kind: 'project', id: project.id })}>Open observatory <span aria-hidden="true">↗</span></button>{project.links.source && <a href={project.links.source} target="_blank" rel="noreferrer">Source <span aria-hidden="true">↗</span></a>}{project.links.live && <a href={project.links.live} target="_blank" rel="noreferrer">Live <span aria-hidden="true">↗</span></a>}</div></div>
+    <div className="project-system-grid">
+      <LocalProjectGraph project={project} emphasis={localEmphasis} selectedId={selectedLocalId} active={active} reducedMotion={reducedMotion} onInspect={setSelectedLocalId} />
+      <ProjectNodeInspector project={project} selectedId={selectedLocalId} onOpenGlobal={onExplore} />
+    </div>
+    <div className="project-media-stage">
+      <header><span>Project views</span><p>Inspect product and system states</p></header>
+      <div className="project-visual-wrap"><ProjectMedia project={project} states={project.media} onEmphasis={setLocalEmphasis} reducedMotion={reducedMotion} /></div>
+    </div>
+  </article>
+}
 
 export default function App() {
-  const { selection, select } = useSelection(); const [hovered, setHovered] = useState<string | null>(null); const [query, setQuery] = useState(''); const [mediaEmphasis, setMediaEmphasis] = useState<string[]>([]); const [reduced, setReduced] = useState(false)
-  useEffect(() => { const media = matchMedia('(prefers-reduced-motion: reduce)'); const change = () => setReduced(media.matches); change(); media.addEventListener('change', change); return () => media.removeEventListener('change', change) }, [])
-  useEffect(() => { setMediaEmphasis([]) }, [selection])
-  const queryMatches = useMemo(() => { const term = query.trim().toLowerCase(); if (!term) return []; return [...projects, ...technologies, ...domains].filter((item) => `${'title' in item ? item.title : item.name} ${'description' in item ? item.description : item.shortDescription}`.toLowerCase().includes(term)).slice(0, 5) }, [query])
-  const hoveredNode = findGraphNode(hovered); const current = getEntity(selection)
-  return <div className="site-shell">
-    <AmbientDots reduced={reduced} />
-    <GraphScene className="graph-canvas" selection={selection} emphasis={mediaEmphasis} onSelect={select} onHover={setHovered} reduced={reduced} />
-    <header className="topbar"><button className="wordmark" onClick={() => select(null)} aria-label="Return to home">DE<span>·</span></button><nav aria-label="Portfolio navigation"><a href="#work">Work</a><a href="#experience">Experience</a><a href="#about">About</a><a href="mailto:davidekpechue@gmail.com?subject=CV%20request">CV</a><a href="https://github.com/DavidEkpechue" target="_blank" rel="noreferrer">GitHub ↗</a><a href="#contact">Contact</a></nav></header>
-    <main>
-      <section className={`hero ${selection ? 'has-focus' : ''}`} aria-labelledby="hero-title">
-        <div className="hero-copy"><p className="catalogue">Independent portfolio / 2026</p><h1 id="hero-title">David<br />Ekpechue</h1><p className="role">Software Engineer</p><p className="hero-line">Building clear, dependable systems for people.</p></div>
-        {!selection && <div className="graph-caption"><span>CONSTELLATION / INTERACTIVE</span><span>{projects.length} projects · {technologies.length} technologies</span></div>}
-        <FocusPanel selection={selection} onMedia={setMediaEmphasis} />
-        {hoveredNode && <div className="node-tooltip"><strong>{title(hoveredNode.name)}</strong><span>{hoveredNode.kind} · {hoveredNode.connections.length} connections</span></div>}
-        {current && <button className="return-home" onClick={() => select(null)}>← Return to universe</button>}
+  const { selection, select } = useSelection()
+  const { reducedMotion, compact } = usePreferences()
+  const chapter = useActiveChapter()
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const [mediaEmphasis, setMediaEmphasis] = useState<string[]>([])
+  const hoveredNode = getGraphNode(hoveredId)
+  const graphSelection = selection ?? chapterSelection(chapter)
+  const graphInteractive = chapter === 'hero' || chapter === 'technologies' || Boolean(selection)
+  const flagshipProjects = useMemo(() => projects.filter(project => project.tier === 'flagship'), [])
+  const supportingProjects = useMemo(() => projects.filter(project => project.tier !== 'flagship' && project.graph.visibility !== 'detail'), [])
+  const ambientMode = selection
+    ? selection.kind === 'project' ? 'project' : 'technologies'
+    : chapter === 'technologies' ? 'technologies' : chapter === 'contact' ? 'contact' : projects.some(project => project.id === chapter) ? 'project' : chapter === 'hero' ? 'home' : 'quiet'
+
+  useEffect(() => { setMediaEmphasis([]); setHoveredId(null) }, [selection, chapter])
+  const selectEntity = useCallback((next: Selection) => { setHoveredId(null); if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); select(next) }, [select])
+  const openInObservatory = useCallback((next: Exclude<Selection, null>) => { setHoveredId(null); select(next, { scrollTop: true }) }, [select])
+  useEffect(() => { const onKeyDown = (event: KeyboardEvent) => { if (event.key === '/' && document.activeElement?.tagName !== 'INPUT') { event.preventDefault(); document.getElementById('universe-query')?.focus() }; if (event.key === 'Escape' && selection) selectEntity(null) }; window.addEventListener('keydown', onKeyDown); return () => window.removeEventListener('keydown', onKeyDown) }, [selectEntity, selection])
+
+  return <div className="site-shell" data-chapter-active={chapter}>
+    <Galaxy mode={ambientMode} compact={compact} reducedMotion={reducedMotion} />
+    <div className="atmospheric-field" aria-hidden="true"><span /><span /><span /></div>
+    <Header onHome={() => { selectEntity(null); window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' }) }} reducedMotion={reducedMotion} />
+    <div className={`constellation-stage ${graphInteractive ? 'is-interactive' : 'is-passive'} ${selection ? 'has-route-focus' : ''}`}><ForceGraph selection={graphSelection} hoveredId={hoveredId} emphasis={mediaEmphasis} compact={compact} reducedMotion={reducedMotion} interactive={graphInteractive} onHover={setHoveredId} onSelect={selectEntity} /></div>
+    <main id="main-content">
+      <section className={`hero ${selection ? 'has-focus' : 'is-home'}`} aria-labelledby={selection ? 'focus-title' : 'hero-title'} data-chapter="hero">
+        {!selection ? <HomeIntroduction /> : <><button type="button" className="return-home" onClick={() => selectEntity(null)}><span aria-hidden="true">←</span> Universe</button><FocusPanel key={`${selection.kind}-${selection.id}`} selection={selection} onSelect={selectEntity} onMediaEmphasis={setMediaEmphasis} reducedMotion={reducedMotion} /></>}
+        <div className="graph-readout" aria-live="polite"><span className="readout-marker" aria-hidden="true" />{hoveredNode ? <><strong>{hoveredNode.name}</strong><span>{hoveredNode.category} · {hoveredNode.connections.length} connections</span></> : <><strong>Constellation</strong><span>Drag a star · Click to focus</span></>}</div><div className="hero-scroll" aria-hidden="true"><span /> Selected work</div>
       </section>
-      <section className="control-strip" aria-label="Constellation controls"><p>Navigate by constellation</p><div className="control-list">{projects.filter((project) => project.featured).map((project) => <button key={project.id} onClick={() => select({ kind: 'project', id: project.id })}>{project.title}</button>)}{domains.map((domain) => <button key={domain.id} onClick={() => select({ kind: 'domain', id: domain.id })}>{domain.name}</button>)}</div><label className="universe-search"><span>Search</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="the universe…" aria-label="Search projects and technologies" /></label>{queryMatches.length > 0 && <div className="search-results">{queryMatches.map((match) => <button key={match.id} onClick={() => { select({ kind: 'title' in match ? 'project' : 'technologies' in match ? 'domain' : 'technology', id: match.id }); setQuery('') }}>{'title' in match ? match.title : match.name}</button>)}</div>}</section>
-      <section id="work" className="section work-section" aria-labelledby="work-heading"><div className="section-label"><span>01</span><p>Selected work</p></div><div className="section-content"><h2 id="work-heading">Systems in<br /><em>orbit.</em></h2><div className="project-list">{projects.map((project) => <button className="project-row" key={project.id} onClick={() => select({ kind: 'project', id: project.id })}><span className="project-number">{project.year}</span><span><strong>{project.title}</strong><small>{project.shortDescription}</small></span><span className="stack">{project.technologies.slice(0, 3).map((id) => technologies.find((t) => t.id === id)?.name).join(' · ')}</span><i>↗</i></button>)}</div></div></section>
-      <section id="experience" className="section experience-section" aria-labelledby="experience-heading"><div className="section-label"><span>02</span><p>Experience</p></div><div className="section-content"><h2 id="experience-heading">Work with<br /><em>context.</em></h2><div className="experience-list">{experience.map((item) => <article key={item.organisation}><p>{item.period}</p><h3>{item.role}<br /><span>{item.organisation}</span></h3><p>{item.shortDescription}</p><small>{item.technologies.join(' · ')}</small></article>)}</div></div></section>
-      <section id="about" className="about-section"><p className="catalogue">03 / About</p><p>I’m interested in the structures behind useful digital products: the decisions, systems, and interfaces that make complex work feel simple.</p></section>
-      <section id="contact" className="contact-section"><p className="catalogue">04 / Contact</p><h2>Start a<br /><a href="mailto:davidekpechue@gmail.com">conversation ↗</a></h2><p>For a CV, project discussion, or collaboration: <a href="mailto:davidekpechue@gmail.com">davidekpechue@gmail.com</a></p></section>
+      <section className="graph-toolbar" aria-label="Constellation navigation"><div className="quick-orbits"><span>Focus</span>{flagshipProjects.map(project => <button key={project.id} type="button" onClick={() => openInObservatory({ kind: 'project', id: project.id })}>{project.title}</button>)}{domains.slice(0, 3).map(domain => <button key={domain.id} type="button" onClick={() => openInObservatory({ kind: 'domain', id: domain.id })}>{domain.name}</button>)}</div><Search onSelect={next => { if (next) openInObservatory(next); else selectEntity(null) }} /></section>
+      <section id="work" className="content-section work-section" aria-labelledby="work-heading" data-chapter="work">
+        <SectionHeading number="01" title="Selected Work" note="Four systems, inspected through their connected technologies" id="work-heading" />
+        <div className="project-showcases">{flagshipProjects.map((project, index) => <ProjectShowcase key={project.id} project={project} index={index} active={chapter === project.id} reducedMotion={reducedMotion} onExplore={openInObservatory} />)}</div>
+        <div className="supporting-projects"><header><span>More systems</span><p>Supporting work and active experiments</p></header>{supportingProjects.map(project => <button key={project.id} type="button" onPointerEnter={() => setHoveredId(project.id)} onPointerLeave={() => setHoveredId(null)} onFocus={() => setHoveredId(project.id)} onBlur={() => setHoveredId(null)} onClick={() => openInObservatory({ kind: 'project', id: project.id })}><strong>{project.title}</strong><span>{project.shortDescription}</span><small>{statusLabel(project.status)}</small></button>)}</div>
+      </section>
+      <section id="experience" className="content-section experience-section" aria-labelledby="experience-heading" data-chapter="experience"><SectionHeading number="02" title="Experience" note="Professional context" id="experience-heading" /><div className="experience-list">{experience.map(item => <article key={item.id}>{item.period && <p className="experience-period">{item.period}</p>}<h3>{item.role}<span>{item.organisation}</span></h3><p>{item.shortDescription}</p>{item.technologies.length > 0 && <div className="experience-tech">{item.technologies.map(id => <span key={id}>{technologies.find(technology => technology.id === id)?.name ?? id}</span>)}</div>}</article>)}<a className="cv-line" href={`mailto:${profile.email}?subject=CV%20request`}><span>CV</span><strong>Request full chronology</strong><span aria-hidden="true">↗</span></a></div></section>
+      <section id="technologies" className="content-section technology-section" aria-labelledby="technology-heading" data-chapter="technologies"><SectionHeading number="03" title="Technologies" note="Evidence through projects and connected systems" id="technology-heading" /><TechnologyExplorer compact={compact} reducedMotion={reducedMotion} onOpen={openInObservatory} /></section>
+      <section id="about" className="content-section about-section" aria-labelledby="about-heading" data-chapter="about"><SectionHeading number="04" title="About" note="Software engineering · Ireland" id="about-heading" /><div className="about-copy"><p>I build software systems and interfaces that make complex work feel clear. My focus is dependable engineering, careful interaction design, and the infrastructure beneath both.</p></div></section>
+      <section id="contact" className="content-section contact-section" aria-labelledby="contact-heading" data-chapter="contact"><SectionHeading number="05" title="Contact" note="Direct links" id="contact-heading" /><div className="contact-register"><a href={`mailto:${profile.email}`}><span>Email</span><strong>{profile.email}</strong><span aria-hidden="true">↗</span></a><a href={profile.github} target="_blank" rel="noreferrer"><span>GitHub</span><strong>DavidEkpechue</strong><span aria-hidden="true">↗</span></a><a href={`mailto:${profile.email}?subject=CV%20request`}><span>CV</span><strong>Request a copy</strong><span aria-hidden="true">↗</span></a></div></section>
     </main>
-    <footer><span>© {new Date().getFullYear()} David Ekpechue</span><span>Portfolio universe / {mediaEmphasis.length ? `focused: ${mediaEmphasis.join(', ')}` : 'home view'}</span></footer>
+    <footer><span>&copy; {new Date().getFullYear()} David Ekpechue</span><span>Software Engineer · Ireland</span><button type="button" onClick={() => { selectEntity(null); window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' }) }}>Universe ↑</button></footer>
   </div>
 }

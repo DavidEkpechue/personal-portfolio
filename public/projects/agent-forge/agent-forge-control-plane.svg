@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760" role="img" aria-labelledby="title desc">
+  <title id="title">Agent Forge control plane architecture</title>
+  <desc id="desc">Browser, API, durable data services, orchestrator and isolated Kubernetes agent jobs.</desc>
+  <defs>
+    <radialGradient id="field" cx="50%" cy="44%" r="68%"><stop offset="0" stop-color="#6f5cff" stop-opacity=".16"/><stop offset="1" stop-color="#07070d" stop-opacity="0"/></radialGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8075d8"/></marker>
+  </defs>
+  <rect width="1280" height="760" fill="#07070d"/><rect width="1280" height="760" fill="url(#field)"/>
+  <g fill="none" stroke="#242333"><path d="M64 112H1216M64 648H1216"/><path d="M160 76V684M1120 76V684"/></g>
+  <g font-family="Inter,Arial,sans-serif"><text x="64" y="62" fill="#9f98c4" font-size="13" letter-spacing="3">AGENT FORGE / VERIFIED SYSTEM MAP</text><text x="1216" y="62" text-anchor="end" fill="#69657c" font-size="12">CONTROL PLANE</text>
+  <g stroke="#8075d8" stroke-opacity=".64" stroke-width="2" fill="none" marker-end="url(#arrow)"><path d="M250 224H414"/><path d="M590 224H760"/><path d="M930 224H1042"/><path d="M502 274V428"/><path d="M842 274V428"/><path d="M590 478H760"/></g>
+  <g fill="#0d0d16" stroke="#3a3850">
+    <rect x="78" y="174" width="172" height="100"/><rect x="414" y="174" width="176" height="100"/><rect x="760" y="174" width="170" height="100"/><rect x="1042" y="174" width="160" height="100"/>
+    <rect x="414" y="428" width="176" height="100"/><rect x="760" y="428" width="170" height="100"/>
+  </g>
+  <g fill="#f0eeff"><text x="104" y="214" font-size="20" font-weight="600">React UI</text><text x="440" y="214" font-size="20" font-weight="600">API</text><text x="786" y="214" font-size="20" font-weight="600">Orchestrator</text><text x="1068" y="214" font-size="20" font-weight="600">Controller</text><text x="440" y="468" font-size="20" font-weight="600">PostgreSQL</text><text x="786" y="468" font-size="20" font-weight="600">Redis / BullMQ</text></g>
+  <g fill="#8e8a9f" font-size="13"><text x="104" y="240">projects · tasks · runs</text><text x="440" y="240">typed service boundary</text><text x="786" y="240">durable scheduling</text><text x="1068" y="240">narrow Kubernetes authority</text><text x="440" y="494">canonical workflow state</text><text x="786" y="494">asynchronous commands</text></g>
+  <rect x="300" y="584" width="680" height="64" fill="#171526" stroke="#7768e8"/><circle cx="340" cy="616" r="8" fill="#9f91ff"/><text x="368" y="612" fill="#f4f2ff" font-size="18" font-weight="600">Isolated Kubernetes AgentRun jobs</text><text x="368" y="635" fill="#918ca8" font-size="13">ephemeral workspaces · bounded credentials · typed results</text>
+  </g>
+</svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760" role="img" aria-labelledby="title desc">
+  <title id="title">Library Management System architecture</title>
+  <desc id="desc">JavaFX desktop scenes connect through controllers and JDBC prepared statements to a MariaDB library schema.</desc>
+  <defs>
+    <radialGradient id="field" cx="50%" cy="46%" r="70%"><stop offset="0" stop-color="#879fce" stop-opacity=".18"/><stop offset="1" stop-color="#07090e" stop-opacity="0"/></radialGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#879fce"/></marker>
+  </defs>
+  <rect width="1280" height="760" fill="#07090e"/><rect width="1280" height="760" fill="url(#field)"/>
+  <g fill="none" stroke="#252a38"><path d="M64 112H1216M64 648H1216"/><path d="M150 76V684M1130 76V684"/></g>
+  <g font-family="Inter,Arial,sans-serif">
+    <text x="64" y="62" fill="#9daac4" font-size="13" letter-spacing="3">LIBRARY MANAGEMENT SYSTEM / REPOSITORY MAP</text>
+    <text x="1216" y="62" text-anchor="end" fill="#6f788d" font-size="12">JAVA DESKTOP APPLICATION</text>
+    <g stroke="#879fce" stroke-opacity=".72" stroke-width="2" fill="none" marker-end="url(#arrow)">
+      <path d="M320 252H474"/><path d="M674 252H830"/><path d="M930 302V438"/>
+    </g>
+    <g fill="#0d111a" stroke="#384258">
+      <rect x="94" y="184" width="226" height="136"/><rect x="474" y="184" width="200" height="136"/><rect x="830" y="184" width="200" height="136"/><rect x="830" y="438" width="200" height="136"/>
+    </g>
+    <g fill="#f1f5ff" font-size="21" font-weight="600">
+      <text x="122" y="226">JavaFX scenes</text><text x="502" y="226">Controllers</text><text x="858" y="226">JDBC</text><text x="858" y="480">MariaDB</text>
+    </g>
+    <g fill="#929caf" font-size="13">
+      <text x="122" y="255">FXML · catalogue · login</text><text x="122" y="279">borrow and return views</text>
+      <text x="502" y="255">navigation · validation</text><text x="502" y="279">inventory actions</text>
+      <text x="858" y="255">prepared statements</text><text x="858" y="279">application data access</text>
+      <text x="858" y="509">books · users</text><text x="858" y="533">borrowing records</text>
+    </g>
+    <rect x="242" y="516" width="432" height="70" fill="#111827" stroke="#6377a0"/>
+    <circle cx="278" cy="551" r="7" fill="#a9bce7"/>
+    <text x="306" y="545" fill="#eef4ff" font-size="18" font-weight="600">Catalogue and circulation workflow</text>
+    <text x="306" y="568" fill="#8f9bb2" font-size="13">availability · issue dates · due dates · returns</text>
+  </g>
+</svg>
