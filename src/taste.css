@@ -107,6 +107,56 @@ footer, .star-preview-kind, .star-preview-meta, .project-media-stage > header p,
 .star-reticle { --reticle-size: 30px; }
 .star-reticle::before { border-style: solid; border-color: rgba(var(--brass-rgb),.6); }
 
+/* ── Restraint: colour is earned by attention ───────────────────────────
+   At rest the whole site is ink and brass. Domain colour appears only on the
+   star being hovered or selected and on the links it lights up. */
+.starfield-nebula {
+  background:
+    radial-gradient(55% 45% at 84% 14%, rgba(70,92,160,.16), transparent 70%),
+    radial-gradient(40% 36% at 8% 92%, rgba(var(--brass-rgb),.06), transparent 72%);
+}
+.force-graph .force-node.is-technology .force-node-marker { background: var(--ink-soft); opacity: .7; box-shadow: none; }
+.force-graph.has-hover .force-node.is-technology:not(.is-dimmed) .force-node-marker,
+.force-graph .force-node.is-technology.is-selection-related .force-node-marker { background: var(--node-color); opacity: 1; box-shadow: 0 0 8px var(--node-color); }
+.force-graph .force-node.is-domain .force-node-marker { background: var(--ink-muted); }
+.force-graph .force-node.is-project .force-node-marker,
+.force-graph .force-node.is-project[data-importance="5"] .force-node-marker { box-shadow: 0 0 4px #fff, 0 0 12px 3px rgba(var(--brass-rgb),.32), 0 0 30px 8px rgba(var(--brass-rgb),.08); }
+.force-graph .force-node.is-project:hover .force-node-marker,
+.force-graph .force-node.is-project.is-selected .force-node-marker { box-shadow: 0 0 4px #fff, 0 0 14px 4px rgba(var(--node-rgb),.6), 0 0 36px 10px rgba(var(--node-rgb),.18); }
+.force-graph .force-node.is-project .force-node-marker::before { border-color: rgba(var(--brass-rgb),.28); }
+.local-graph-node > span { background: var(--ink-soft); box-shadow: none; }
+.local-graph-node:hover > span, .local-graph-node.is-emphasised > span, .local-graph-node.is-selected > span { background: var(--node-color, var(--ink)); box-shadow: 0 0 6px var(--node-color, transparent); }
+.local-graph-node.is-project > span { background: #fff; box-shadow: 0 0 4px #fff, 0 0 12px 3px rgba(var(--brass-rgb),.4); }
+.technology-map-node.is-technology i { background: var(--ink-soft); box-shadow: none; }
+.technology-map-node.is-technology:hover i, .technology-map-node.is-technology.is-related i, .technology-map-node.is-technology.is-selected i { background: var(--node-color); box-shadow: 0 0 6px var(--node-color); }
+.technology-map-node.is-project i { box-shadow: 0 0 4px #fff, 0 0 12px 3px rgba(var(--brass-rgb),.35) !important; }
+.work-section .project-showcase { --project-accent: var(--brass-bright); --project-accent-rgb: var(--brass-rgb); --project-soft: var(--brass-bright); }
+.project-showcase::before { opacity: .55; }
+.supporting-projects > button strong::before { background: var(--brass); box-shadow: none; }
+.supporting-projects > button:hover strong, .supporting-projects > button:focus-visible strong { color: var(--brass-bright); }
+
+/* ── Sleeker: lighter display, quieter instruments ──────────────────── */
+.hero h1 { font-weight: 500; letter-spacing: -.015em; }
+.section-heading h2, .project-copy-block h3 { font-weight: 500; }
+.hero .hero-line { max-width: 40ch; }
+.astrolabe { opacity: .2; }
+.astrolabe-rete { display: none; }
+.chart-key { gap: 8px; margin-top: 36px; }
+.chart-key ul { font-size: var(--text-sm); color: var(--ink-muted); }
+.chart-key p { max-width: 48ch; }
+.graph-view-controls button { width: 34px; height: 34px; border-color: transparent; background: rgba(12,18,32,.7); color: var(--ink-soft); }
+@media (hover: hover) and (pointer: fine) {
+  .force-graph .graph-view-controls { opacity: 0; transition: opacity 200ms var(--ease-out); }
+  .force-graph:hover .graph-view-controls, .force-graph:focus-within .graph-view-controls { opacity: 1; }
+}
+
+/* ── Voice: the incantation. Code is magic is the recurring line. ──────── */
+.incantation { margin: 8px 0 0; color: var(--brass-bright); font: italic 500 var(--text-lg)/1.35 var(--font-display); letter-spacing: .005em; }
+.hero .hero-motif { margin-top: 6px; color: var(--ink-soft); font-size: 20px; }
+.section-heading p.incantation { margin-top: 6px; color: var(--brass-bright); font: italic 500 var(--text-lg)/1.35 var(--font-display); }
+footer .incantation { margin: 0; font-size: var(--text-md); }
+.mobile-menu-panel > p span { color: var(--brass-bright); font-style: italic; font-family: var(--font-display); font-size: var(--text-lg); }
+
 @media (prefers-reduced-motion: reduce) {
   .media-frame { filter: none; transition: opacity 150ms linear; }
   .star-tooltip { scale: 1; }

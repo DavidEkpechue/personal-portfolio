@@ -48,7 +48,7 @@ export default function MobileStaggeredMenu({ email, github, instagram, reducedM
           </a>
         </li>)}</ol>
       </nav>
-      <p>David Ekpechue<br /><span>Software Engineer</span></p>
+      <p>David Ekpechue<br /><span>Software engineer. Code is magic.</span></p>
     </aside>
   </div>
 }

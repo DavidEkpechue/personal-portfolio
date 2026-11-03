@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { CSSProperties } from 'react'
 import Astrolabe from './components/Astrolabe'
 import FocusPanel from './components/FocusPanel'
 import ForceGraph from './components/ForceGraph'
@@ -16,7 +15,6 @@ import { useSpotlight } from './components/reactbits/useSpotlight'
 import { domains, experience, profile, projects, searchKnowledgeBase, statusLabel, technologies } from './data/portfolio'
 import type { Project, Selection } from './data/portfolio'
 import { getGraphNode } from './graph/model'
-import { projectColor, rgbOf } from './graph/palette'
 import { useAnchorCorrection } from './hooks/useAnchorCorrection'
 import { usePreferences } from './hooks/usePreferences'
 import { useSelection } from './hooks/useSelection'
@@ -52,7 +50,7 @@ function Search({ onSelect }: { onSelect: (selection: Selection) => void }) {
   return <div className="universe-search">
     <label htmlFor="universe-query"><span>Search the map</span><kbd>/</kbd></label>
     <input id="universe-query" name="q" type="search" value={query} onChange={event => setQuery(event.target.value)} aria-label="Search projects, technologies and domains" autoComplete="off" spellCheck={false} placeholder="Project or technology…" />
-    {query && <div className="search-results" role="listbox" aria-label="Search results">{results.length ? results.map(result => <button key={`${result.kind}-${result.id}`} type="button" role="option" aria-selected="false" onClick={() => { onSelect({ kind: result.kind, id: result.id }); setQuery('') }}><span>{result.label}</span><small>{result.meta}</small></button>) : <p>Nothing on the map matches “{query}”. Try a technology such as React or Redis.</p>}</div>}
+    {query && <div className="search-results" role="listbox" aria-label="Search results">{results.length ? results.map(result => <button key={`${result.kind}-${result.id}`} type="button" role="option" aria-selected="false" onClick={() => { onSelect({ kind: result.kind, id: result.id }); setQuery('') }}><span>{result.label}</span><small>{result.meta}</small></button>) : <p>No star answers to “{query}”. Try a technology such as React or Redis.</p>}</div>}
   </div>
 }
 
@@ -69,7 +67,7 @@ function Header({ onHome, reducedMotion }: { onHome: () => void; reducedMotion: 
 // A star chart carries a key; this one says what the marks on the map mean.
 function ChartKey({ compact }: { compact: boolean }) {
   return <figure className="chart-key">
-    <figcaption>Reading the star chart</figcaption>
+    <figcaption className="visually-hidden">Reading the star chart</figcaption>
     <ul>
       <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="4.5" className="key-project" /><circle cx="10" cy="10" r="8" className="key-halo" /></svg>Project</li>
       <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="2.4" className="key-technology" /></svg>Technology</li>
@@ -83,6 +81,7 @@ function HomeIntroduction({ compact, onExplore }: { compact: boolean; onExplore:
   return <div className="hero-copy">
     <h1 id="hero-title"><BlurText text="David" /><br /><BlurText text="Ekpechue" delay={.18} /></h1>
     <p className="hero-role">Software engineer in Ireland</p>
+    <p className="incantation hero-motif">Code is magic, written down so that it keeps working.</p>
     <p className="hero-line">{profile.intro} Each project below is a star; the lines between them are the technologies they share.</p>
     <div className="hero-actions">
       <StarBorder className="button-primary" href="#work">View selected work <Icon name="down" /></StarBorder>
@@ -92,8 +91,8 @@ function HomeIntroduction({ compact, onExplore }: { compact: boolean; onExplore:
   </div>
 }
 
-function SectionHeading({ title, note, id }: { title: string; note: string; id: string }) {
-  return <header className="section-heading"><div><h2 id={id}>{title}</h2><p>{note}</p></div></header>
+function SectionHeading({ title, note, spell, id }: { title: string; note: string; spell?: string; id: string }) {
+  return <header className="section-heading"><div><h2 id={id}>{title}</h2><p>{note}</p>{spell && <p className="incantation">{spell}</p>}</div></header>
 }
 
 function ProjectShowcase({ project, active, reducedMotion, onExplore }: {
@@ -107,8 +106,7 @@ function ProjectShowcase({ project, active, reducedMotion, onExplore }: {
   const stack = project.graph.primaryTechnologies.map(id => technologies.find(item => item.id === id)?.name)
   const focus = project.domains.slice(0, 3).map(id => domains.find(domain => domain.id === id)?.name)
   useEffect(() => { setLocalEmphasis(project.media[0]?.emphasis ?? []); setSelectedLocalId(project.id) }, [project])
-  const accent = projectColor(project.id)
-  return <article className={`project-showcase project-${project.id} ${active ? 'is-active' : ''}`} style={{ '--project-accent': accent, '--project-accent-rgb': rgbOf(accent), '--project-soft': accent } as CSSProperties} id={`case-${project.id}`} data-chapter={project.id} data-project={project.id}>
+  return <article className={`project-showcase project-${project.id} ${active ? 'is-active' : ''}`} id={`case-${project.id}`} data-chapter={project.id} data-project={project.id}>
     <div className="project-copy-block">
       <p className="project-overline">{statusLabel(project.status)}{project.year && <>, <span className="data">{project.year}</span></>}</p>
       <h3>{project.title}</h3>
@@ -121,7 +119,7 @@ function ProjectShowcase({ project, active, reducedMotion, onExplore }: {
       <ProjectNodeInspector project={project} selectedId={selectedLocalId} onOpenGlobal={onExplore} />
     </div>
     <div className="project-media-stage">
-      <header><span>Plates</span><p>Captures of the product and diagrams of the system</p></header>
+      <header><span>Plates</span><p>Each spell as it looks when it runs: captures of the product and diagrams of the system</p></header>
       <div className="project-visual-wrap"><ProjectMedia project={project} states={project.media} onEmphasis={setLocalEmphasis} reducedMotion={reducedMotion} /></div>
     </div>
   </article>
@@ -202,15 +200,15 @@ export default function App() {
       </section>
       <section className="graph-toolbar" aria-label="Jump to part of the map"><div className="quick-orbits"><span>Jump to</span>{flagshipProjects.map(project => <button key={project.id} type="button" onClick={() => openInObservatory({ kind: 'project', id: project.id })}>{project.title}</button>)}{domains.slice(0, 3).map(domain => <button key={domain.id} type="button" onClick={() => openInObservatory({ kind: 'domain', id: domain.id })}>{domain.name}</button>)}</div><Search onSelect={next => { if (next) openInObservatory(next); else selectEntity(null) }} /></section>
       <section id="work" className="content-section work-section" aria-labelledby="work-heading" data-chapter="work">
-        <SectionHeading title="Selected work" note="Four systems, each shown with the technologies it is built from" id="work-heading" />
+        <SectionHeading title="Selected work" note="Four systems, each shown with the technologies it is built from" spell="Each began as a few lines of code. Each one still runs." id="work-heading" />
         <div className="project-showcases">{flagshipProjects.map(project => <ProjectShowcase key={project.id} project={project} active={chapter === project.id} reducedMotion={reducedMotion} onExplore={openInObservatory} />)}</div>
-        <div className="supporting-projects"><header><span>More systems</span><p>Supporting work and active experiments</p></header>{supportingProjects.map(project => <button key={project.id} type="button" onPointerEnter={() => setHoveredId(project.id)} onPointerLeave={() => setHoveredId(null)} onFocus={() => setHoveredId(project.id)} onBlur={() => setHoveredId(null)} style={{ '--project-accent': projectColor(project.id) } as CSSProperties} onClick={() => openInObservatory({ kind: 'project', id: project.id })}><strong>{project.title}</strong><span>{project.shortDescription}</span><small>{statusLabel(project.status)}</small></button>)}</div>
+        <div className="supporting-projects"><header><span>More systems</span><p>Supporting work and experiments still being cast</p></header>{supportingProjects.map(project => <button key={project.id} type="button" onPointerEnter={() => setHoveredId(project.id)} onPointerLeave={() => setHoveredId(null)} onFocus={() => setHoveredId(project.id)} onBlur={() => setHoveredId(null)} onClick={() => openInObservatory({ kind: 'project', id: project.id })}><strong>{project.title}</strong><span>{project.shortDescription}</span><small>{statusLabel(project.status)}</small></button>)}</div>
       </section>
-      <section id="experience" className="content-section experience-section" aria-labelledby="experience-heading" data-chapter="experience"><SectionHeading title="Experience" note="Roles and organisations" id="experience-heading" /><div className="experience-list">{experience.map(item => <article key={item.id}>{item.period && <p className="experience-period">{item.period}</p>}<h3>{item.role}<span>{item.organisation}</span></h3><p>{item.shortDescription}</p>{item.technologies.length > 0 && <div className="experience-tech">{item.technologies.map(id => <span key={id}>{technologies.find(technology => technology.id === id)?.name ?? id}</span>)}</div>}</article>)}<a className="cv-line" href={`mailto:${profile.email}?subject=CV%20request`}><span>CV</span><strong>Ask for the full history by email</strong><Icon name="forward" /></a></div></section>
-      <section id="technologies" className="content-section technology-section" aria-labelledby="technology-heading" data-chapter="technologies"><SectionHeading title="Technologies" note="Every technology here is backed by a project that uses it" id="technology-heading" /><TechnologyExplorer compact={compact} reducedMotion={reducedMotion} onOpen={openInObservatory} /></section>
-      <section id="about" className="content-section about-section" aria-labelledby="about-heading" data-chapter="about"><SectionHeading title="About" note="Based in Ireland" id="about-heading" /><div className="about-copy"><p>I build software systems and interfaces that make complex work feel clear. My focus is dependable engineering, careful interaction design, and the infrastructure beneath both.</p></div></section>
-      <section id="contact" className="content-section contact-section" aria-labelledby="contact-heading" data-chapter="contact"><SectionHeading title="Contact" note="Email, code, CV and Instagram" id="contact-heading" /><div className="contact-register"><a href={`mailto:${profile.email}`}><span>Email</span><strong>{profile.email}</strong><Icon name="forward" /></a><a href={profile.github} target="_blank" rel="noreferrer"><span>GitHub</span><strong translate="no">DavidEkpechue</strong><Icon name="external" /></a><a href={profile.instagram} target="_blank" rel="noreferrer"><span>Instagram</span><strong translate="no">@david_ekpec</strong><Icon name="external" /></a><a href={`mailto:${profile.email}?subject=CV%20request`}><span>CV</span><strong>Request a copy</strong><Icon name="forward" /></a></div></section>
+      <section id="experience" className="content-section experience-section" aria-labelledby="experience-heading" data-chapter="experience"><SectionHeading title="Experience" note="Roles and organisations" spell="Where the craft is practised." id="experience-heading" /><div className="experience-list">{experience.map(item => <article key={item.id}>{item.period && <p className="experience-period">{item.period}</p>}<h3>{item.role}<span>{item.organisation}</span></h3><p>{item.shortDescription}</p>{item.technologies.length > 0 && <div className="experience-tech">{item.technologies.map(id => <span key={id}>{technologies.find(technology => technology.id === id)?.name ?? id}</span>)}</div>}</article>)}<a className="cv-line" href={`mailto:${profile.email}?subject=CV%20request`}><span>CV</span><strong>Ask for the full history by email</strong><Icon name="forward" /></a></div></section>
+      <section id="technologies" className="content-section technology-section" aria-labelledby="technology-heading" data-chapter="technologies"><SectionHeading title="Technologies" note="Every technology here is backed by a project that uses it" spell="The spellbook, indexed by the work that proves it." id="technology-heading" /><TechnologyExplorer compact={compact} reducedMotion={reducedMotion} onOpen={openInObservatory} /></section>
+      <section id="about" className="content-section about-section" aria-labelledby="about-heading" data-chapter="about"><SectionHeading title="About" note="Based in Ireland" spell="Code is magic." id="about-heading" /><div className="about-copy"><p>I build software systems and interfaces that make complex work feel clear. My focus is dependable engineering, careful interaction design, and the infrastructure beneath both.</p></div></section>
+      <section id="contact" className="content-section contact-section" aria-labelledby="contact-heading" data-chapter="contact"><SectionHeading title="Contact" note="Email, code, CV and Instagram" spell="Email arrives faster than an owl." id="contact-heading" /><div className="contact-register"><a href={`mailto:${profile.email}`}><span>Email</span><strong>{profile.email}</strong><Icon name="forward" /></a><a href={profile.github} target="_blank" rel="noreferrer"><span>GitHub</span><strong translate="no">DavidEkpechue</strong><Icon name="external" /></a><a href={profile.instagram} target="_blank" rel="noreferrer"><span>Instagram</span><strong translate="no">@david_ekpec</strong><Icon name="external" /></a><a href={`mailto:${profile.email}?subject=CV%20request`}><span>CV</span><strong>Request a copy</strong><Icon name="forward" /></a></div></section>
     </main>
-    <footer><span>&copy; {new Date().getFullYear()} David Ekpechue</span><span>Software engineer in Ireland</span><button type="button" onClick={backToTop}>Back to the top <Icon name="up" size={14} /></button></footer>
+    <footer><span>&copy; {new Date().getFullYear()} David Ekpechue</span><span className="incantation">Code is magic</span><button type="button" onClick={backToTop}>Back to the top <Icon name="up" size={14} /></button></footer>
   </div>
 }

@@ -525,7 +525,7 @@ export default function ForceGraph({ selection, hoveredId, emphasis, compact, re
         {hoveredNode && <>
           <strong><DecryptedText text={hoveredNode.name} reducedMotion={reducedMotion} /></strong>
           <span>{hoveredNode.kind === 'project' ? `Project, ${hoveredNode.category.toLowerCase()}` : hoveredNode.kind === 'domain' ? 'Domain' : hoveredNode.category}</span>
-          <small><span className="data">{hoveredNode.connections.length}</span> connections. Click to open.</small>
+          <small><span className="data">{hoveredNode.connections.length}</span> connections. Click to open its page.</small>
         </>}
       </div>
 

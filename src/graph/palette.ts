@@ -50,8 +50,6 @@ export function entityColor(kind: 'project' | 'technology' | 'domain', id: strin
   return technologyColor(id)
 }
 
-/** Domains shown in the map key, in the order a reader meets them. */
-export const keyDomains = ['frontend', 'backend', 'realtime', 'databases-data', 'infrastructure', 'ai-automation', 'mobile', 'commerce-storage', 'game-development']
 
-/** Spell sparks cycle through the chart's jewel tones. */
-export const sparkColors = ['frontend', 'ai-automation', 'infrastructure', 'commerce-storage', 'realtime', 'databases-data'].map(id => domainColors[id])
+/** Spell sparks: brass and white light, so colour stays reserved for domains. */
+export const sparkColors = ['#e6c98b', '#ffffff', '#cfa65c', '#f1e3c5']
