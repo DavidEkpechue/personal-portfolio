@@ -5,7 +5,7 @@ import { domainRelationships, relationships } from './relationships'
 import { technologies } from './technologies'
 import type { Profile, Selection } from './types'
 
-export const profile: Profile = { name: 'David Ekpechue', role: 'Software Engineer', intro: 'Building clear, dependable systems for people.', email: 'davidekpechue@gmail.com', github: 'https://github.com/DavidEkpechue', instagram: 'https://www.instagram.com/david_ekpec/' }
+export const profile: Profile = { name: 'David Ekpechue', role: 'Software Developer', intro: 'Building clear, dependable systems for people.', email: 'davidekpechue@gmail.com', github: 'https://github.com/DavidEkpechue', instagram: 'https://www.instagram.com/david_ekpec/' }
 
 function assertUnique(label: string, ids: string[]) {
   const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index)

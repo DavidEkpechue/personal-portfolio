@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react'
 import { technologies } from '../data/portfolio'
 import type { Project, ProjectMediaState } from '../data/portfolio'
+import { projectColor } from '../graph/palette'
 import ASCIIText from './reactbits/ASCIIText'
 
 const technologyName = (id: string) => technologies.find(technology => technology.id === id)?.name ?? id
@@ -148,7 +149,7 @@ export default function ProjectMedia({ project, states, onEmphasis, reducedMotio
     if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(event.clientY - start.y)) show(activeIndex + (dx < 0 ? 1 : -1))
   }
 
-  const accent = projectPalettes[project.id]?.[1] ?? states[0]?.palette[1] ?? '#d9b56e'
+  const accent = projectColor(project.id)
   return <figure className={`media-viewer media-${project.id} ${reducedMotion ? 'is-reduced' : ''} ${instant ? 'is-instant' : ''}`} onPointerDownCapture={() => setInstant(false)} style={{ '--media-accent': accent } as CSSProperties} data-state={activeState?.id}>
     <div className="media-chrome">
       

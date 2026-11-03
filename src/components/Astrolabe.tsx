@@ -3,7 +3,7 @@
 // ring of twelve marks. Pure SVG; the limb turns slowly with a CSS transform.
 const ticks = Array.from({ length: 72 }, (_, index) => index)
 const sigils = Array.from({ length: 12 }, (_, index) => index)
-const inscription = 'Code is magic ✦ David Ekpechue ✦ Software engineer ✦ Ireland ✦ Every system begins as a spell someone wrote down ✦ '
+const inscription = 'Code is magic ✦ David Ekpechue ✦ Software developer ✦ Dublin ✦ Every system begins as a spell someone wrote down ✦ '
 
 function Sigil({ index }: { index: number }) {
   // Twelve small marks in three alternating shapes, drawn rather than typed.

@@ -40,7 +40,21 @@ for (const domain of domains) for (const technology of domain.technologies) if (
 
 export const rgbOf = (hex: string) => [1, 3, 5].map(index => parseInt(hex.slice(index, index + 2), 16)).join(',')
 export const domainColor = (domainId: string | undefined) => (domainId && domainColors[domainId]) || fallback
-export const projectColor = (projectId: string) => domainColor(projectSignatureDomain[projectId])
+// Each project's own colour, sampled from its screenshots and diagrams; projects
+// without coloured imagery take a quiet tone.
+export const projectBrandColors: Record<string, string> = {
+  minglr: '#ef6a43',
+  '4thspace': '#3d8fd1',
+  izrosh: '#e0553a',
+  'eze-travels': '#3fa57a',
+  'agent-forge': '#8a7ff0',
+  'dino-game': '#9cbf5c',
+  'library-management-system': '#8ea3c4',
+  'constellation-portfolio': '#e6c98b',
+  'untitled-mech-game': '#c9a066',
+  'home-server': '#9aa6b8',
+}
+export const projectColor = (projectId: string) => projectBrandColors[projectId] ?? domainColor(projectSignatureDomain[projectId])
 export const technologyColor = (technologyId: string) => domainColor(technologyDomain.get(technologyId))
 
 /** Colour for any node on the map, whatever its kind. */
