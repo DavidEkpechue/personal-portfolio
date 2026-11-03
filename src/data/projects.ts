@@ -326,6 +326,23 @@ export const projects: Project[] = [
     media: [media('platform', 'Platform', 'Self-hosting', 'Linux, containers and networked services', ['linux', 'docker', 'networking'])],
     graph: { importance: 2, visibility: 'secondary', primaryTechnologies: ['linux', 'docker', 'networking'] },
   },
+  {
+    id: 'dan-and-dave',
+    title: "Dan & Dave's Webservices",
+    shortDescription: 'Production website for an Irish web studio serving trades and service businesses: services, pricing, care plans, contact flows and three client demo sites.',
+    tier: 'secondary',
+    status: 'live',
+    verification: 'owner-confirmed',
+    role: 'Developer',
+    domains: ['frontend', 'backend'],
+    technologies: ['react', 'typescript', 'vite', 'resend'],
+    features: ['Service, pricing and care-plan pages', 'Roofing, plumbing and building demo sites', 'Contact form with phone or email preference'],
+    engineeringHighlights: ['Server-side contact validation with a spam honeypot and input limits', 'Enquiry emails delivered through Resend', 'One npm workspace building into a single Cloudflare Worker'],
+    repoEvidence: [ownerEvidence('dan-and-dave', 'Production studio website confirmed by the owner; stack from the project README.')],
+    links: {},
+    media: [media('studio', 'Studio site', 'Services and demos', 'Services, pricing, care plans and client demo sites', ['react', 'vite', 'resend'])],
+    graph: { importance: 2, visibility: 'secondary', primaryTechnologies: ['react', 'typescript', 'vite', 'resend'] },
+  },
 ]
 
 export const showcaseProjects = projects.filter(project => project.tier === 'flagship' || project.tier === 'major')

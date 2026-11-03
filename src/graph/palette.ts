@@ -33,6 +33,7 @@ export const projectSignatureDomain: Record<string, string> = {
   'dino-game': 'game-development',
   'library-management-system': 'desktop-applications',
   'home-server': 'infrastructure',
+  'dan-and-dave': 'frontend',
 }
 
 const technologyDomain = new Map<string, string>()
@@ -53,6 +54,7 @@ export const projectBrandColors: Record<string, string> = {
   'constellation-portfolio': '#e6c98b',
   'untitled-mech-game': '#c9a066',
   'home-server': '#9aa6b8',
+  'dan-and-dave': '#c8b89a',
 }
 export const projectColor = (projectId: string) => projectBrandColors[projectId] ?? domainColor(projectSignatureDomain[projectId])
 export const technologyColor = (technologyId: string) => domainColor(technologyDomain.get(technologyId))
